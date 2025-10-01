@@ -1,0 +1,27 @@
+[
+  {
+    "filename": "create-action-plan.png",
+    "caption": "Create Action Plan screen",
+    "tags": ["action", "plan", "owner", "priority"]
+  },
+  {
+    "filename": "cause-analysis-wizard.png",
+    "caption": "Cause Analysis wizard flow",
+    "tags": ["cause", "analysis", "wizard"]
+  },
+  {
+    "filename": "lessons-learned-list.png",
+    "caption": "Lessons Learned repository list",
+    "tags": ["lessons", "knowledge", "sharing"]
+  },
+  {
+    "filename": "report-event-form.png",
+    "caption": "Patient Safety Event reporting form",
+    "tags": ["event", "reporting", "form"]
+  },
+  {
+    "filename": "schedule-huddle.png",
+    "caption": "Huddle scheduling screen",
+    "tags": ["huddle", "schedule", "team"]
+  }
+]
