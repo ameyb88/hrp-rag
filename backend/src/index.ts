@@ -32,3 +32,8 @@ app.post('/api/ask', async (req, res) => {
 });
 
 app.listen(8080, () => console.log('API listening on http://localhost:8080'));
+
+const PORT = process.env.PORT ? parseInt(process.env.PORT) : 8080;
+app.listen(PORT, () => {
+  console.log('API listening on http:', { PORT });
+});
