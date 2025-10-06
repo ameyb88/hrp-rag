@@ -132,7 +132,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import OpenAI from 'openai';
 import { db } from './db';
-import { tfidfVector, cosine } from '../src/verctorizer'; // or './vectorizer'
+import { tfidfVector, cosine } from './verctorizer'; // or './vectorizer'
 
 // ---------- Config ----------
 const OPENAI_API_KEY = process.env['OPENAI_API_KEY'];
