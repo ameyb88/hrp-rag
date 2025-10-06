@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 
 @Injectable({ providedIn: 'root' })
 export class RagService {
-  private base = 'http://localhost:8080/api';
+  private base = 'https://hrp-rag.onrender.com/api';
   constructor(private http: HttpClient) {}
   ask(query: string) {
     return this.http.post<{ answer: string; screenshots: string[] }>(

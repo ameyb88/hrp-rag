@@ -127,18 +127,21 @@
 //   return { answer: baseAnswer, screenshots: images.map((i) => i.filename) };
 // }
 
+// backend/src/rag.ts
 import * as fs from 'fs';
 import * as path from 'path';
 import OpenAI from 'openai';
 import { db } from './db';
-import { tfidfVector, cosine } from '../src/verctorizer';
+import { tfidfVector, cosine } from '../src/verctorizer'; // or './vectorizer'
 
+// ---------- Config ----------
 const OPENAI_API_KEY = process.env['OPENAI_API_KEY'];
 const MODEL_RESPONSES = process.env['MODEL_RESPONSES'] || 'gpt-4o-mini';
 
+// OpenAI client only if key exists
 const openai = OPENAI_API_KEY ? new OpenAI({ apiKey: OPENAI_API_KEY }) : null;
 
-// Load vocab/idf
+// ---------- Model artifacts ----------
 const MODEL_DIR = path.resolve(__dirname, '..');
 const VOCAB_PATH = path.join(MODEL_DIR, 'vocab.json');
 const IDF_PATH = path.join(MODEL_DIR, 'idf.bin');
@@ -147,335 +150,189 @@ type Vocab = Record<string, number>;
 const VOCAB: Vocab = fs.existsSync(VOCAB_PATH)
   ? JSON.parse(fs.readFileSync(VOCAB_PATH, 'utf8'))
   : {};
-const IDF = fs.existsSync(IDF_PATH)
-  ? new Float32Array(fs.readFileSync(IDF_PATH).buffer)
-  : new Float32Array(0);
 
-function loadEmbedding(buf: Buffer) {
-  return new Float32Array(buf.buffer, buf.byteOffset, buf.byteLength / 4);
+const idfFile = fs.existsSync(IDF_PATH)
+  ? fs.readFileSync(IDF_PATH)
+  : Buffer.alloc(0);
+const IDF = new Float32Array(
+  idfFile.buffer,
+  idfFile.byteOffset,
+  Math.floor(idfFile.byteLength / 4)
+);
+
+// ---------- Types ----------
+interface Row {
+  text: string;
+  path: string;
+  chunk_index: number;
+  embedding: Buffer;
 }
 
-type Retrieved = {
+interface Mem {
+  text: string;
+  path: string;
+  chunk_index: number;
+  emb: Float32Array;
+}
+
+export interface Retrieved {
   text: string;
   path: string;
   chunk_index: number;
   score: number;
-};
-type ImageHit = { filename: string; caption: string; score: number };
+}
 
-const IMAGE_INDEX_PATH = path.resolve(__dirname, 'image-index.json');
-const IMAGE_INDEX: { filename: string; caption: string; tags: string[] }[] =
-  fs.existsSync(IMAGE_INDEX_PATH)
-    ? JSON.parse(fs.readFileSync(IMAGE_INDEX_PATH, 'utf8'))
-    : [];
+export interface ImageHit {
+  filename: string;
+  caption: string;
+  score: number;
+}
 
-// Preload memory
-const MEMORY = db
-  .prepare(`SELECT text, path, chunk_index, embedding FROM chunks`)
-  .all()
-  .map((r: any) => ({
+// ---------- Load chunk memory ----------
+function loadEmbedding(buf: Buffer): Float32Array {
+  return new Float32Array(
+    buf.buffer,
+    buf.byteOffset,
+    Math.floor(buf.byteLength / 4)
+  );
+}
+
+const MEMORY: Mem[] = (
+  db
+    .prepare(`SELECT text, path, chunk_index, embedding FROM chunks`)
+    .all() as Row[]
+).map(
+  (r): Mem => ({
     text: r.text,
     path: r.path,
     chunk_index: r.chunk_index,
     emb: loadEmbedding(r.embedding),
-  }));
+  })
+);
 
-console.log(`Loaded ${MEMORY.length} chunks into memory`);
+console.log(`Loaded ${MEMORY.length} chunks into memory.`);
 
-// ====== IMPROVED QUERY EXPANSION ======
-function expandQuery(query: string): string {
-  const expansions: Record<string, string[]> = {
-    overheat: [
-      'overheat',
-      'overheating',
-      'overheated',
-      'high temperature',
-      'excessive heat',
-      'too hot',
-      'temperature warning',
-      'coolant hot',
-    ],
-    engine: ['engine', 'motor', 'powertrain', 'diesel'],
-    temperature: ['temperature', 'temp', 'heat', 'thermal', 'hot'],
-    coolant: ['coolant', 'cooling', 'radiator', 'antifreeze', 'coolant level'],
-    pressure: ['pressure', 'psi', 'high pressure', 'low pressure'],
-    problem: [
-      'problem',
-      'issue',
-      'trouble',
-      'fault',
-      'error',
-      'malfunction',
-      'failure',
-    ],
-    fix: ['fix', 'repair', 'solve', 'troubleshoot', 'remedy', 'correct'],
-    procedure: [
-      'procedure',
-      'steps',
-      'process',
-      'instructions',
-      'how to',
-      'what to do',
-    ],
-    warning: ['warning', 'alert', 'caution', 'notice', 'indicator'],
-    check: ['check', 'inspect', 'examine', 'verify', 'test', 'monitor'],
-  };
-
-  const queryLower = query.toLowerCase();
-  const expandedTerms = new Set<string>();
-
-  // Add original query
-  expandedTerms.add(query);
-
-  // Add expansions for matched terms
-  Object.entries(expansions).forEach(([key, values]) => {
-    if (queryLower.includes(key)) {
-      values.forEach((v) => expandedTerms.add(v));
-    }
-  });
-
-  return Array.from(expandedTerms).join(' ');
-}
-
-// ====== ENHANCED RETRIEVE WITH QUERY EXPANSION ======
+// ---------- Retrieval ----------
 export async function retrieve(
   query: string,
-  topK = 10 // Increased from 6 to get more candidates
+  topK = 8
 ): Promise<{ contexts: Retrieved[]; images: ImageHit[] }> {
-  console.log('\n--- Retrieve Query ---');
-  console.log('Original:', query);
+  const q = query.trim();
+  if (!q) return { contexts: [], images: [] };
 
-  // Expand query with synonyms
-  const expandedQuery = expandQuery(query);
-  console.log('Expanded:', expandedQuery);
+  // Build TF-IDF vector for the exact user query (lowercased)
+  const qvec = tfidfVector(q.toLowerCase(), VOCAB, IDF);
 
-  // Create vector from expanded query
-  const qvec = tfidfVector(expandedQuery, VOCAB, IDF);
-
-  // Calculate similarities
-  const scored = MEMORY.map((m) => ({
-    score: cosine(qvec, m.emb) as number,
-    m,
-  }));
-
-  // Add keyword-based bonus scoring
-  const queryTerms = query
+  // Small exact-term bonus helps TF-IDF when wording is identical
+  const terms = q
     .toLowerCase()
-    .split(/\s+/)
-    .filter((t) => t.length > 2);
+    .split(/\W+/)
+    .filter((t) => t.length >= 3);
+  const EXACT_BONUS = 0.1;
 
-  scored.forEach((item) => {
-    const textLower = item.m.text.toLowerCase();
-    let bonusScore = 0;
-
-    // Boost if exact query terms appear
-    queryTerms.forEach((term) => {
-      if (textLower.includes(term)) {
-        bonusScore += 0.1;
-      }
-    });
-
-    // Boost for procedural content
-    if (
-      textLower.includes('procedure') ||
-      textLower.includes('step') ||
-      textLower.includes('follow') ||
-      textLower.includes('instructions')
-    ) {
-      bonusScore += 0.15;
+  const scored: Retrieved[] = MEMORY.map((m: Mem): Retrieved => {
+    let score = cosine(qvec, m.emb) || 0;
+    const hay = m.text.toLowerCase();
+    for (const t of terms) {
+      if (hay.includes(t)) score += EXACT_BONUS;
     }
-
-    // Boost for warning/safety content
-    if (
-      textLower.includes('warning') ||
-      textLower.includes('caution') ||
-      textLower.includes('important') ||
-      textLower.includes('danger')
-    ) {
-      bonusScore += 0.1;
-    }
-
-    // Boost for troubleshooting content
-    if (
-      textLower.includes('if') &&
-      (textLower.includes('check') ||
-        textLower.includes('inspect') ||
-        textLower.includes('verify'))
-    ) {
-      bonusScore += 0.1;
-    }
-
-    item.score = (item.score || 0) + bonusScore;
-  });
-
-  // Sort and get top K
-  const contexts = scored
-    .sort((a, b) => (b.score ?? -Infinity) - (a.score ?? -Infinity))
-    .slice(0, topK)
-    .map(({ score, m }) => ({
+    return {
       text: m.text,
       path: m.path,
       chunk_index: m.chunk_index,
-      score: score || 0,
-    }));
-
-  // Log top results
-  console.log('\n--- Top Results ---');
-  contexts.slice(0, 3).forEach((ctx, idx) => {
-    console.log(`${idx + 1}. Score: ${ctx.score.toFixed(4)}`);
-    console.log(`   Source: ${ctx.path} (chunk ${ctx.chunk_index})`);
-    console.log(`   Preview: ${ctx.text.substring(0, 120)}...`);
+      score: score ?? 0,
+    };
   });
 
-  // Find relevant images
-  const terms = query.toLowerCase().split(/\W+/).filter(Boolean);
-  const images = IMAGE_INDEX.map((img) => {
-    const hay = (img.caption + ' ' + img.tags.join(' ')).toLowerCase();
-    const score = terms.reduce((s, t) => s + (hay.includes(t) ? 1 : 0), 0);
-    return { filename: img.filename, caption: img.caption, score };
-  })
-    .filter((x) => x.score > 0)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 4);
+  scored.sort((a, b) => b.score - a.score);
+  const contexts = scored.slice(0, topK);
+
+  // If you have an image index file you want to keep using, you can wire it back here.
+  // For now, we return no screenshots to avoid 404s/CORS confusion.
+  const images: ImageHit[] = [];
+
+  // Debug peek
+  console.log('\n[retrieve]', q);
+  contexts.slice(0, 3).forEach((c, i) => {
+    const snippet = c.text.replace(/\s+/g, ' ').slice(0, 160);
+    console.log(
+      `  #${i + 1} ${path.basename(c.path)}#${
+        c.chunk_index
+      } score=${c.score.toFixed(3)} :: ${snippet} ...`
+    );
+  });
 
   return { contexts, images };
 }
 
-// ====== IMPROVED ANSWER GENERATION ======
+// ---------- Answering ----------
 export async function answer(
   query: string,
   contexts: Retrieved[],
   images: ImageHit[]
-) {
-  if (contexts.length === 0 || contexts[0].score < 0.05) {
+): Promise<{
+  answer: string;
+  screenshots: string[];
+  confidence: 'low' | 'medium' | 'high';
+}> {
+  if (!contexts.length) {
     return {
       answer:
-        "I don't have enough information in the provided documents to answer this question confidently. The documents may not cover this topic, or the question may need to be rephrased.",
+        "I don't have enough information in the indexed documents to answer that.",
       screenshots: [],
       confidence: 'low',
     };
   }
 
-  // Determine confidence
-  const topScore = contexts[0].score;
-  const confidence =
-    topScore > 0.3 ? 'high' : topScore > 0.15 ? 'medium' : 'low';
+  const top = contexts[0].score;
+  const confidence: 'low' | 'medium' | 'high' =
+    top > 0.3 ? 'high' : top > 0.15 ? 'medium' : 'low';
 
-  // Use OpenAI if available
-  if (openai) {
-    const sys = `You are a technical documentation assistant specializing in Kenworth vehicle manuals.
-
-Your task:
-1. Answer the user's question ONLY using the provided CONTEXT chunks
-2. If the context contains step-by-step procedures, present them clearly
-3. If the context has warnings or cautions, include them prominently
-4. Be specific and technical - use exact terminology from the manual
-5. If the context doesn't fully answer the question, say so explicitly
-6. Never make up information not in the CONTEXT
-
-Format your answer as:
-- A direct answer to the question
-- Relevant procedures or steps (if applicable)
-- Important warnings or notes (if applicable)
-- Source references (chunk numbers)`;
-
-    const contextBlock = contexts
+  // If no OpenAI key, return a simple stitched answer from top chunks
+  if (!openai) {
+    const stitched = contexts
+      .slice(0, 3)
       .map(
-        (c, i) => `[Chunk ${i + 1}] (${path.basename(c.path)} - chunk ${
-          c.chunk_index
-        }, score: ${c.score.toFixed(3)})
-${c.text}`
+        (c, i) =>
+          `**Source ${i + 1}** (${path.basename(c.path)} #${
+            c.chunk_index
+          }, relevance: ${(c.score * 100).toFixed(1)}%)\n${c.text}`
       )
       .join('\n\n---\n\n');
 
-    const imgBlock = images
-      .map((i) => `- ${i.filename}: ${i.caption}`)
-      .join('\n');
-
-    try {
-      const chat = await openai.chat.completions.create({
-        model: MODEL_RESPONSES,
-        messages: [
-          { role: 'system', content: sys },
-          {
-            role: 'user',
-            content: `QUESTION: ${query}
-
-CONTEXT (ranked by relevance):
-${contextBlock}
-
-${imgBlock ? `AVAILABLE SCREENSHOTS:\n${imgBlock}` : ''}
-
-Please answer the question based on the context above.`,
-          },
-        ],
-        temperature: 0.3, // Lower temperature for more factual responses
-      });
-
-      const answer =
-        chat.choices[0]?.message?.content?.trim() ||
-        "I couldn't generate an answer. Please try rephrasing your question.";
-
-      return {
-        answer,
-        screenshots: images.map((i) => i.filename),
-        confidence,
-      };
-    } catch (error) {
-      console.error('OpenAI API error:', error);
-      // Fall through to base answer
-    }
+    return {
+      answer: `**Answer (from docs)**\n\n${stitched}`,
+      screenshots: [],
+      confidence,
+    };
   }
 
-  // Fallback: no OpenAI or API error
-  const baseAnswer = `Based on the available documentation:
+  // With OpenAI — generate a concise answer grounded in context
+  const sys =
+    'You are a precise product/manual Q&A assistant. Answer ONLY from the provided CONTEXT. ' +
+    'If the answer is not present, say you do not know. Keep answers concise and actionable.';
 
-${contexts
-  .slice(0, 3)
-  .map(
-    (c, i) =>
-      `**Source ${i + 1}** (${path.basename(c.path)}, chunk ${
-        c.chunk_index
-      }, relevance: ${(c.score * 100).toFixed(1)}%):\n${c.text}`
-  )
-  .join('\n\n---\n\n')}
+  const contextBlock = contexts
+    .map(
+      (c, i) =>
+        `[${i + 1}] (${path.basename(c.path)} #${
+          c.chunk_index
+        }, score ${c.score.toFixed(3)})\n${c.text}`
+    )
+    .join('\n\n');
 
-${
-  images.length > 0
-    ? `\n**Related Screenshots:**\n${images
-        .map((i) => `- ${i.filename}: ${i.caption}`)
-        .join('\n')}`
-    : ''
-}`;
+  const chat = await openai.chat.completions.create({
+    model: MODEL_RESPONSES,
+    temperature: 0.3,
+    messages: [
+      { role: 'system', content: sys },
+      {
+        role: 'user',
+        content: `QUESTION:\n${query}\n\nCONTEXT:\n${contextBlock}\n\nAnswer based only on the context.`,
+      },
+    ],
+  });
 
-  return {
-    answer: baseAnswer,
-    screenshots: images.map((i) => i.filename),
-    confidence,
-  };
-}
-
-// ====== TEST FUNCTION ======
-if (require.main === module) {
-  (async () => {
-    const testQueries = [
-      'What should I do if the engine is overheating?',
-      'How do I check coolant levels?',
-      'Engine temperature warning procedures',
-    ];
-
-    for (const query of testQueries) {
-      console.log('\n========================================');
-      console.log(`Testing: "${query}"`);
-      console.log('========================================');
-
-      const { contexts, images } = await retrieve(query, 10);
-      const result = await answer(query, contexts, images);
-
-      console.log('\n--- Final Answer ---');
-      console.log('Confidence:', result.confidence);
-      console.log('\n', result.answer);
-      console.log('\nScreenshots:', result.screenshots);
-    }
-  })();
+  const content = chat.choices?.[0]?.message?.content?.trim() || 'No answer.';
+  return { answer: content, screenshots: [], confidence };
 }
