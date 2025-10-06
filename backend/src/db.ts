@@ -1,6 +1,9 @@
+// backend/src/db.ts
 import Database from 'better-sqlite3';
+import * as path from 'path';
 
-export const db = new Database('rag.sqlite');
+const DB_PATH = path.resolve(__dirname, '..', 'rag.sqlite');
+export const db = new Database(DB_PATH);
 
 db.exec(`
 CREATE TABLE IF NOT EXISTS chunks (
