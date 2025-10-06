@@ -88,66 +88,207 @@
 
 // backend/src/embed.ts
 // backend/src/search.ts
+// backend/src/embed.ts
 import * as fs from 'fs';
 import * as path from 'path';
 import { db } from './db';
-import { tfidfVector } from './verctorizer';
 
-// --- Load model ---
-const VOCAB_PATH = path.resolve(__dirname, '..', 'vocab.json');
-const IDF_PATH = path.resolve(__dirname, '..', 'idf.bin');
+/**
+ * VERBOSE, SELF-CONTAINED INDEXER
+ * - Finds .md files in backend/data/docs
+ * - Chunks them
+ * - Builds vocab + IDF
+ * - Writes vocab.json + idf.bin
+ * - Stores TF-IDF vectors in SQLite (chunks table)
+ */
 
-const vocab = JSON.parse(fs.readFileSync(VOCAB_PATH, 'utf8'));
-const idfBuffer = fs.readFileSync(IDF_PATH);
-const idf = new Float32Array(
-  idfBuffer.buffer,
-  idfBuffer.byteOffset,
-  idfBuffer.length / 4
-);
+// ---------- Paths ----------
+const ROOT = path.resolve(__dirname, '..');
+const DATA_DIR = path.join(ROOT, 'data', 'docs');
+const VOCAB_PATH = path.join(ROOT, 'vocab.json');
+const IDF_PATH = path.join(ROOT, 'idf.bin');
 
-// --- Utility: cosine similarity ---
-function cosineSimilarity(a: Float32Array, b: Float32Array): number {
-  let dot = 0,
-    na = 0,
-    nb = 0;
-  const len = Math.min(a.length, b.length);
-  for (let i = 0; i < len; i++) {
-    dot += a[i] * b[i];
-    na += a[i] * a[i];
-    nb += b[i] * b[i];
-  }
-  return na && nb ? dot / (Math.sqrt(na) * Math.sqrt(nb)) : 0;
+// ---------- Helpers ----------
+function log(...args: any[]) {
+  console.log('[embed]', ...args);
 }
 
-// --- Core search ---
-export async function searchDocs(query: string, topK = 5) {
-  const qVec = tfidfVector(query.toLowerCase(), vocab, idf);
+function assertDir(p: string) {
+  if (!fs.existsSync(p)) {
+    throw new Error(`Directory not found: ${p}`);
+  }
+}
 
-  const rows = db
-    .prepare(`SELECT doc_id, path, chunk_index, text, embedding FROM chunks`)
-    .all();
+function chunkText(text: string, max = 900): string[] {
+  const paras = text
+    .split(/\n{1,2}/g)
+    .map((p) => p.trim())
+    .filter(Boolean);
+  const chunks: string[] = [];
+  let buf = '';
+  for (const p of paras) {
+    if ((buf + '\n' + p).length > max && buf) {
+      chunks.push(buf);
+      buf = p;
+    } else {
+      buf = buf ? buf + '\n' + p : p;
+    }
+  }
+  if (buf) chunks.push(buf);
+  return chunks;
+}
 
-  const scored = rows.map((r: any) => {
-    const emb = new Float32Array(
-      r.embedding.buffer,
-      r.embedding.byteOffset,
-      r.embedding.length / 4
-    );
-    const sim = cosineSimilarity(qVec, emb);
-    return { ...r, score: sim };
+function tokenize(s: string): string[] {
+  return s
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .split(/\s+/)
+    .filter((w) => w.length >= 2);
+}
+
+type Vocab = Record<string, number>;
+
+function buildVocabAndIdf(allDocs: string[]): {
+  vocab: Vocab;
+  idf: Float32Array;
+} {
+  const vocab: Vocab = {};
+  const dfs: number[] = []; // document frequencies by term index
+
+  // 1) build vocab + DF
+  allDocs.forEach((doc) => {
+    const terms = new Set(tokenize(doc));
+    terms.forEach((term) => {
+      let idx = vocab[term];
+      if (idx === undefined) {
+        idx = Object.keys(vocab).length;
+        vocab[term] = idx;
+        dfs[idx] = 0;
+      }
+      dfs[idx] += 1;
+    });
   });
 
-  scored.sort((a, b) => b.score - a.score);
-
-  const best = scored.slice(0, topK);
-  console.log('\nTop matches for:', query);
-  best.forEach((r, i) =>
-    console.log(
-      `${i + 1}. ${r.doc_id} (chunk ${r.chunk_index}) score=${r.score.toFixed(
-        3
-      )}\n   ${r.text.slice(0, 100)}...`
-    )
-  );
-
-  return best;
+  const N = allDocs.length;
+  const idf = new Float32Array(Object.keys(vocab).length);
+  for (const [term, idx] of Object.entries(vocab)) {
+    const df = dfs[idx] || 0;
+    // smooth IDF
+    idf[idx] = Math.log((N + 1) / (df + 1)) + 1;
+  }
+  return { vocab, idf };
 }
+
+function tfidfVector(
+  text: string,
+  vocab: Vocab,
+  idf: Float32Array
+): Float32Array {
+  const vec = new Float32Array(idf.length);
+  const toks = tokenize(text);
+  if (!toks.length) return vec;
+
+  // term frequency
+  const tf = new Map<number, number>();
+  toks.forEach((t) => {
+    const idx = vocab[t];
+    if (idx !== undefined) tf.set(idx, (tf.get(idx) || 0) + 1);
+  });
+
+  // L2-normalized TF-IDF
+  let norm = 0;
+  tf.forEach((count, idx) => {
+    const val = (count / toks.length) * idf[idx];
+    vec[idx] = val;
+    norm += val * val;
+  });
+  norm = Math.sqrt(norm) || 1;
+  for (let i = 0; i < vec.length; i++) vec[i] = vec[i] / norm;
+
+  return vec;
+}
+
+// ---------- Ensure schema ----------
+db.exec(`
+CREATE TABLE IF NOT EXISTS chunks (
+  id INTEGER PRIMARY KEY,
+  doc_id TEXT,
+  path TEXT,
+  chunk_index INTEGER,
+  text TEXT,
+  embedding BLOB
+);
+CREATE INDEX IF NOT EXISTS idx_chunks_doc ON chunks(doc_id);
+CREATE INDEX IF NOT EXISTS idx_chunks_path ON chunks(path);
+`);
+
+// ---------- Main ----------
+(async function main() {
+  try {
+    log('Starting indexer...');
+    assertDir(DATA_DIR);
+
+    const allFiles = fs.readdirSync(DATA_DIR);
+    log('DATA_DIR =', DATA_DIR);
+    log('All files in data/docs:', allFiles);
+
+    // Only .md for now (skip giant PDFs)
+    const files = allFiles.filter((f) => f.toLowerCase().endsWith('.md'));
+    if (!files.length) {
+      log('No .md files found. Add markdown files to data/docs and re-run.');
+      return;
+    }
+
+    const allChunks: {
+      file: string;
+      full: string;
+      idx: number;
+      text: string;
+    }[] = [];
+
+    for (const file of files) {
+      const full = path.join(DATA_DIR, file);
+      const text = fs.readFileSync(full, 'utf8');
+      const chunks = chunkText(text, 900);
+      log(`Indexing file: ${file} -> ${chunks.length} chunks`);
+      chunks.forEach((t, i) => allChunks.push({ file, full, idx: i, text: t }));
+    }
+
+    // Build vocab + idf over all chunks' text
+    const { vocab, idf } = buildVocabAndIdf(allChunks.map((c) => c.text));
+    fs.writeFileSync(VOCAB_PATH, JSON.stringify(vocab), 'utf8');
+    fs.writeFileSync(IDF_PATH, Buffer.from(new Float32Array(idf).buffer));
+    log(
+      `Wrote vocab.json (${Object.keys(vocab).length} terms) and idf.bin (${
+        idf.length
+      }).`
+    );
+
+    // Clear table and insert vectors
+    db.prepare(`DELETE FROM chunks`).run();
+    const insert = db.prepare(`
+      INSERT INTO chunks (doc_id, path, chunk_index, text, embedding)
+      VALUES (@doc_id, @path, @chunk_index, @text, @embedding)
+    `);
+
+    let inserted = 0;
+    for (const c of allChunks) {
+      const vec = tfidfVector(c.text, vocab, idf);
+      const blob = Buffer.from(new Float32Array(vec).buffer);
+      insert.run({
+        doc_id: c.file,
+        path: c.full,
+        chunk_index: c.idx,
+        text: c.text,
+        embedding: blob,
+      });
+      inserted++;
+    }
+
+    log(`Indexed ${inserted} chunks. Done.`);
+  } catch (e: any) {
+    console.error('[embed] ERROR:', e?.message || e);
+    console.error(e);
+    process.exit(1);
+  }
+})();

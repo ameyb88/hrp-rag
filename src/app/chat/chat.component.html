@@ -18,7 +18,7 @@
       [(ngModel)]="input"
       name="prompt"
       (keydown.enter)="send()"
-      placeholder="Ask about HRP..."
+      placeholder="Ask Me.."
     />
     <button (click)="send()" [disabled]="loading || !input.trim()">Send</button>
   </div>
