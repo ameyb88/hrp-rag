@@ -127,19 +127,237 @@
 //   return { answer: baseAnswer, screenshots: images.map((i) => i.filename) };
 // }
 
+// // backend/src/rag.ts
+// import * as fs from 'fs';
+// import * as path from 'path';
+// import OpenAI from 'openai';
+// import { db } from './db';
+// import { tfidfVector, cosine } from './verctorizer'; // or './vectorizer'
+
+// // ---------- Config ----------
+// const OPENAI_API_KEY = process.env['OPENAI_API_KEY'];
+// const MODEL_RESPONSES = process.env['MODEL_RESPONSES'] || 'gpt-4o-mini';
+
+// // OpenAI client only if key exists
+// const openai = OPENAI_API_KEY ? new OpenAI({ apiKey: OPENAI_API_KEY }) : null;
+
+// // ---------- Model artifacts ----------
+// const MODEL_DIR = path.resolve(__dirname, '..');
+// const VOCAB_PATH = path.join(MODEL_DIR, 'vocab.json');
+// const IDF_PATH = path.join(MODEL_DIR, 'idf.bin');
+
+// type Vocab = Record<string, number>;
+// const VOCAB: Vocab = fs.existsSync(VOCAB_PATH)
+//   ? JSON.parse(fs.readFileSync(VOCAB_PATH, 'utf8'))
+//   : {};
+
+// const idfFile = fs.existsSync(IDF_PATH)
+//   ? fs.readFileSync(IDF_PATH)
+//   : Buffer.alloc(0);
+// const IDF = new Float32Array(
+//   idfFile.buffer,
+//   idfFile.byteOffset,
+//   Math.floor(idfFile.byteLength / 4)
+// );
+
+// // ---------- Types ----------
+// interface Row {
+//   text: string;
+//   path: string;
+//   chunk_index: number;
+//   embedding: Buffer;
+// }
+
+// interface Mem {
+//   text: string;
+//   path: string;
+//   chunk_index: number;
+//   emb: Float32Array;
+// }
+
+// export interface Retrieved {
+//   text: string;
+//   path: string;
+//   chunk_index: number;
+//   score: number;
+// }
+
+// export interface ImageHit {
+//   filename: string;
+//   caption: string;
+//   score: number;
+// }
+
+// // ---------- Load chunk memory ----------
+// function loadEmbedding(buf: Buffer): Float32Array {
+//   return new Float32Array(
+//     buf.buffer,
+//     buf.byteOffset,
+//     Math.floor(buf.byteLength / 4)
+//   );
+// }
+
+// const MEMORY: Mem[] = (
+//   db
+//     .prepare(`SELECT text, path, chunk_index, embedding FROM chunks`)
+//     .all() as Row[]
+// ).map(
+//   (r): Mem => ({
+//     text: r.text,
+//     path: r.path,
+//     chunk_index: r.chunk_index,
+//     emb: loadEmbedding(r.embedding),
+//   })
+// );
+
+// console.log(`Loaded ${MEMORY.length} chunks into memory.`);
+
+// // ---------- Retrieval ----------
+// export async function retrieve(
+//   query: string,
+//   topK = 8
+// ): Promise<{ contexts: Retrieved[]; images: ImageHit[] }> {
+//   const q = query.trim();
+//   if (!q) return { contexts: [], images: [] };
+
+//   // Build TF-IDF vector for the exact user query (lowercased)
+//   const qvec = tfidfVector(q.toLowerCase(), VOCAB, IDF);
+
+//   // Small exact-term bonus helps TF-IDF when wording is identical
+//   const terms = q
+//     .toLowerCase()
+//     .split(/\W+/)
+//     .filter((t) => t.length >= 3);
+//   const EXACT_BONUS = 0.1;
+
+//   const scored: Retrieved[] = MEMORY.map((m: Mem): Retrieved => {
+//     let score = cosine(qvec, m.emb) || 0;
+//     const hay = m.text.toLowerCase();
+//     for (const t of terms) {
+//       if (hay.includes(t)) score += EXACT_BONUS;
+//     }
+//     return {
+//       text: m.text,
+//       path: m.path,
+//       chunk_index: m.chunk_index,
+//       score: score ?? 0,
+//     };
+//   });
+
+//   scored.sort((a, b) => b.score - a.score);
+//   const contexts = scored.slice(0, topK);
+
+//   // If you have an image index file you want to keep using, you can wire it back here.
+//   // For now, we return no screenshots to avoid 404s/CORS confusion.
+//   const images: ImageHit[] = [];
+
+//   // Debug peek
+//   console.log('\n[retrieve]', q);
+//   contexts.slice(0, 3).forEach((c, i) => {
+//     const snippet = c.text.replace(/\s+/g, ' ').slice(0, 160);
+//     console.log(
+//       `  #${i + 1} ${path.basename(c.path)}#${
+//         c.chunk_index
+//       } score=${c.score.toFixed(3)} :: ${snippet} ...`
+//     );
+//   });
+
+//   return { contexts, images };
+// }
+
+// // ---------- Answering ----------
+// export async function answer(
+//   query: string,
+//   contexts: Retrieved[],
+//   images: ImageHit[]
+// ): Promise<{
+//   answer: string;
+//   screenshots: string[];
+//   confidence: 'low' | 'medium' | 'high';
+// }> {
+//   if (!contexts.length) {
+//     return {
+//       answer:
+//         "I don't have enough information in the indexed documents to answer that.",
+//       screenshots: [],
+//       confidence: 'low',
+//     };
+//   }
+
+//   const top = contexts[0].score;
+//   const confidence: 'low' | 'medium' | 'high' =
+//     top > 0.3 ? 'high' : top > 0.15 ? 'medium' : 'low';
+
+//   // If no OpenAI key, return a simple stitched answer from top chunks
+//   if (!openai) {
+//     const stitched = contexts
+//       .slice(0, 3)
+//       .map(
+//         (c, i) =>
+//           `**Source ${i + 1}** (${path.basename(c.path)} #${
+//             c.chunk_index
+//           }, relevance: ${(c.score * 100).toFixed(1)}%)\n${c.text}`
+//       )
+//       .join('\n\n---\n\n');
+
+//     return {
+//       answer: `**Answer (from docs)**\n\n${stitched}`,
+//       screenshots: [],
+//       confidence,
+//     };
+//   }
+
+//   // With OpenAI — generate a concise answer grounded in context
+//   const sys =
+//     'You are a precise product/manual Q&A assistant. Answer ONLY from the provided CONTEXT. ' +
+//     'If the answer is not present, say you do not know. Keep answers concise and actionable.';
+
+//   const contextBlock = contexts
+//     .map(
+//       (c, i) =>
+//         `[${i + 1}] (${path.basename(c.path)} #${
+//           c.chunk_index
+//         }, score ${c.score.toFixed(3)})\n${c.text}`
+//     )
+//     .join('\n\n');
+
+//   const chat = await openai.chat.completions.create({
+//     model: MODEL_RESPONSES,
+//     temperature: 0.3,
+//     messages: [
+//       { role: 'system', content: sys },
+//       {
+//         role: 'user',
+//         content: `QUESTION:\n${query}\n\nCONTEXT:\n${contextBlock}\n\nAnswer based only on the context.`,
+//       },
+//     ],
+//   });
+
+//   const content = chat.choices?.[0]?.message?.content?.trim() || 'No answer.';
+//   return { answer: content, screenshots: [], confidence };
+// }
+
 // backend/src/rag.ts
 import * as fs from 'fs';
 import * as path from 'path';
 import OpenAI from 'openai';
 import { db } from './db';
-import { tfidfVector, cosine } from './verctorizer'; // or './vectorizer'
+import { tfidfVector, cosine } from './verctorizer'; // keep your filename; change to './vectorizer' if that's the real name
 
 // ---------- Config ----------
 const OPENAI_API_KEY = process.env['OPENAI_API_KEY'];
-const MODEL_RESPONSES = process.env['MODEL_RESPONSES'] || 'gpt-4o-mini';
+// Pick a real, enabled model for your account or leave blank to disable OpenAI calls.
+const MODEL_RESPONSES =
+  process.env['MODEL_RESPONSES'] &&
+  process.env['MODEL_RESPONSES']!.trim() !== ''
+    ? process.env['MODEL_RESPONSES']!
+    : ''; // e.g. 'gpt-4o-mini' or '' to disable
 
-// OpenAI client only if key exists
-const openai = OPENAI_API_KEY ? new OpenAI({ apiKey: OPENAI_API_KEY }) : null;
+// OpenAI client only if key + model are present
+const openai =
+  OPENAI_API_KEY && MODEL_RESPONSES
+    ? new OpenAI({ apiKey: OPENAI_API_KEY })
+    : null;
 
 // ---------- Model artifacts ----------
 const MODEL_DIR = path.resolve(__dirname, '..');
@@ -197,11 +415,11 @@ function loadEmbedding(buf: Buffer): Float32Array {
   );
 }
 
-const MEMORY: Mem[] = (
-  db
-    .prepare(`SELECT text, path, chunk_index, embedding FROM chunks`)
-    .all() as Row[]
-).map(
+const rows = db
+  .prepare(`SELECT text, path, chunk_index, embedding FROM chunks`)
+  .all() as Row[];
+
+const MEMORY: Mem[] = rows.map(
   (r): Mem => ({
     text: r.text,
     path: r.path,
@@ -231,7 +449,7 @@ export async function retrieve(
   const EXACT_BONUS = 0.1;
 
   const scored: Retrieved[] = MEMORY.map((m: Mem): Retrieved => {
-    let score = cosine(qvec, m.emb) || 0;
+    let score = (cosine(qvec, m.emb) as number) || 0;
     const hay = m.text.toLowerCase();
     for (const t of terms) {
       if (hay.includes(t)) score += EXACT_BONUS;
@@ -240,16 +458,16 @@ export async function retrieve(
       text: m.text,
       path: m.path,
       chunk_index: m.chunk_index,
-      score: score ?? 0,
+      score,
     };
   });
 
-  scored.sort((a, b) => b.score - a.score);
-  const contexts = scored.slice(0, topK);
-
-  // If you have an image index file you want to keep using, you can wire it back here.
-  // For now, we return no screenshots to avoid 404s/CORS confusion.
-  const images: ImageHit[] = [];
+  // If everything is zero (common when query tokens aren't in vocab),
+  // keep the original order but still slice topK to avoid one chunk recurring forever.
+  const hasSignal = scored.some((r) => r.score > 0);
+  const contexts = (
+    hasSignal ? scored.sort((a, b) => b.score - a.score) : scored
+  ).slice(0, topK);
 
   // Debug peek
   console.log('\n[retrieve]', q);
@@ -262,6 +480,8 @@ export async function retrieve(
     );
   });
 
+  // No screenshots until you wire real ones
+  const images: ImageHit[] = [];
   return { contexts, images };
 }
 
@@ -269,7 +489,7 @@ export async function retrieve(
 export async function answer(
   query: string,
   contexts: Retrieved[],
-  images: ImageHit[]
+  _images: ImageHit[]
 ): Promise<{
   answer: string;
   screenshots: string[];
@@ -288,7 +508,7 @@ export async function answer(
   const confidence: 'low' | 'medium' | 'high' =
     top > 0.3 ? 'high' : top > 0.15 ? 'medium' : 'low';
 
-  // If no OpenAI key, return a simple stitched answer from top chunks
+  // If OpenAI is disabled or misconfigured, return stitched chunks
   if (!openai) {
     const stitched = contexts
       .slice(0, 3)
@@ -307,7 +527,7 @@ export async function answer(
     };
   }
 
-  // With OpenAI — generate a concise answer grounded in context
+  // With OpenAI — generate concise answer grounded in context
   const sys =
     'You are a precise product/manual Q&A assistant. Answer ONLY from the provided CONTEXT. ' +
     'If the answer is not present, say you do not know. Keep answers concise and actionable.';
@@ -321,18 +541,42 @@ export async function answer(
     )
     .join('\n\n');
 
-  const chat = await openai.chat.completions.create({
-    model: MODEL_RESPONSES,
-    temperature: 0.3,
-    messages: [
-      { role: 'system', content: sys },
-      {
-        role: 'user',
-        content: `QUESTION:\n${query}\n\nCONTEXT:\n${contextBlock}\n\nAnswer based only on the context.`,
-      },
-    ],
-  });
+  try {
+    const chat = await openai.chat.completions.create({
+      model: MODEL_RESPONSES, // e.g., 'gpt-4o-mini' if your account has it; otherwise set env to a model you have
+      temperature: 0.3,
+      messages: [
+        { role: 'system', content: sys },
+        {
+          role: 'user',
+          content: `QUESTION:\n${query}\n\nCONTEXT:\n${contextBlock}\n\nAnswer based only on the context.`,
+        },
+      ],
+    });
 
-  const content = chat.choices?.[0]?.message?.content?.trim() || 'No answer.';
-  return { answer: content, screenshots: [], confidence };
+    const content = chat.choices?.[0]?.message?.content?.trim() || '';
+    if (content) {
+      return { answer: content, screenshots: [], confidence };
+    }
+  } catch (err) {
+    // Swallow model errors and fall back
+    console.error('OpenAI error:', err);
+  }
+
+  // Fallback if OpenAI call failed
+  const stitched = contexts
+    .slice(0, 3)
+    .map(
+      (c, i) =>
+        `**Source ${i + 1}** (${path.basename(c.path)} #${
+          c.chunk_index
+        }, relevance: ${(c.score * 100).toFixed(1)}%)\n${c.text}`
+    )
+    .join('\n\n---\n\n');
+
+  return {
+    answer: `**Answer (from docs)**\n\n${stitched}`,
+    screenshots: [],
+    confidence,
+  };
 }
