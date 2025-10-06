@@ -40,3 +40,15 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
+# Secrets / env
+.env
+.env.*
+**/*.env
+backend/.env
+*.pem
+*.key
+*.p12
+*.crt
+
+# Angular env files (no secrets here, but keep out of VCS if you mirror)
+src/environments/*.local.ts

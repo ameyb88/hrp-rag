@@ -1,0 +1,24 @@
+<div class="chat-container">
+  <div class="chat-window">
+    <div *ngFor="let m of messages" class="message" [ngClass]="m.role">
+      <div class="bubble">
+        <span class="label">{{ m.role === "user" ? "You" : "Assistant" }}</span>
+        <div [innerHTML]="m.text"></div>
+        <div class="shots" *ngIf="m.shots?.length">
+          <img *ngFor="let s of m.shots" [src]="s" alt="screenshot" />
+        </div>
+      </div>
+    </div>
+    <div *ngIf="loading" class="loading">Thinking…</div>
+  </div>
+
+  <div class="input-bar">
+    <input
+      [(ngModel)]="input"
+      name="prompt"
+      (keydown.enter)="send()"
+      placeholder="Ask about the docs…"
+    />
+    <button (click)="send()" [disabled]="loading || !input.trim()">Send</button>
+  </div>
+</div>
