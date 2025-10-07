@@ -19,6 +19,10 @@ app.post('/api/ask', async (req, res) => {
     if (!query) return res.status(400).json({ error: 'Missing query' });
 
     const { contexts, images } = await retrieve(query, 8);
+    console.log('[index.ts] Retrieved contexts:', contexts.length);
+    contexts.slice(0, 3).forEach((c, i) => {
+      console.log(`  Context ${i + 1}: ${c.text.substring(0, 100)}...`);
+    });
     const out = await answer(query, contexts, images);
 
     res.json(out);

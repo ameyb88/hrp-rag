@@ -8,21 +8,21 @@ _Last updated: 2025-10-07_
 
 ## About
 
-I’m a results-driven **Full-Stack Engineer** with 13+ years of experience delivering **responsive, scalable, and user-focused web applications**. My career has focused on translating complex business needs into clean, high-performing software—primarily using **Angular, TypeScript, C#.NET, and MS SQL**.
+I'm a results-driven **Full-Stack Engineer** with 13+ years of experience delivering **responsive, scalable, and user-focused web applications**. My career has focused on translating complex business needs into clean, high-performing software—primarily using **Angular, TypeScript, C#.NET, and MS SQL**.
 
-Over the years, I’ve led complete **application overhauls**, **modernized legacy systems**, and partnered closely with **product, design, and business** teams to ship features that make measurable impact.
+Over the years, I've led complete **application overhauls**, **modernized legacy systems**, and partnered closely with **product, design, and business** teams to ship features that make measurable impact.
 
-Lately, I’ve been exploring the intersection of **frontend engineering and AI**, integrating **GPT-powered insights** into enterprise workflows and building **AI-assisted UI components** that improve usability, decision support, and productivity—while keeping performance, accessibility, and scalability at the forefront.
+Lately, I've been exploring the intersection of **frontend engineering and AI**, integrating **GPT-powered insights** into enterprise workflows and building **AI-assisted UI components** that improve usability, decision support, and productivity—while keeping performance, accessibility, and scalability at the forefront.
 
 I believe great engineering blends **clarity, empathy, and impact**. Whether balancing technical debt with new feature delivery, mentoring engineers, or aligning architecture with business strategy, I bring a **calm, thoughtful, and proactive mindset**.
 
-I’m now seeking a **Senior Software Engineer or Engineering Manager** role where I can combine **hands-on development, leadership, and AI-driven innovation** to drive quality and growth.
+I'm now seeking a **Senior Software Engineer or Engineering Manager** role where I can combine **hands-on development, leadership, and AI-driven innovation** to drive quality and growth.
 
 ---
 
 ## Values
 
-I believe great engineering goes beyond code — it’s about **clarity, empathy, and impact**.
+I believe great engineering goes beyond code — it's about **clarity, empathy, and impact**.
 
 - **Empathy first:** Build with the end user in mind and treat teammates as partners.
 - **Transparency:** Honest communication builds trust.
@@ -101,7 +101,7 @@ _Oct 2012 – Apr 2014_
 
 _Jun 2012 – Dec 2012 · San Diego, CA_
 
-- Designed and developed an **interactive prototype** for VAIO Engineering’s product marketing needs.
+- Designed and developed an **interactive prototype** for VAIO Engineering's product marketing needs.
 - Built **Augmented Reality (AR)** features using the **Metaio SDK**, enabling product animations and real‑time visual overlays for product identification.
 - Implemented **geo‑fencing** with Google Maps APIs and **integrated barcode scanning** for traceability.
 - Connected to **BazaarVoice RESTful APIs** to aggregate real‑time ratings and reviews for marketing insights.
@@ -117,11 +117,20 @@ _Jun 2012 – Dec 2012 · San Diego, CA_
 
 ---
 
-## Work Authorization (U.S.)
+## Work Authorization and Visa Status (U.S.)
 
-- **Citizenship:** Canadian
-- **Current Visa:** **TN**
-- **Prior:** H‑1B; **I‑140 approved (Oct 2016)** — **cap‑exempt** under current rules
+**Current visa status:** Amey Bhalerao is currently working on a **TN visa** (Trade NAFTA visa for Canadian professionals).
+
+**Work authorization details:**
+
+- **Current visa type:** TN visa - a temporary work visa that allows Canadian and Mexican professionals to work in the United States
+- **Citizenship:** Canadian citizen
+- **Previous visa:** H-1B visa (specialty occupation work visa)
+- **Immigration status:** I-140 petition approved in October 2016, making him cap-exempt under current U.S. immigration rules
+- **Visa sponsorship requirements:** TN visa holders are authorized to work in the United States. The TN visa can be renewed indefinitely and does not require traditional employer sponsorship like H-1B visas do.
+- **Work authorization status:** Currently authorized to work in the United States on TN visa
+
+**Summary of work authorization:** Amey is a Canadian citizen currently working in the U.S. on a TN visa. He previously held an H-1B visa and has an approved I-140 petition. His current work authorization is valid and he is authorized to work legally in the United States. The TN visa allows him to work as a software engineer without requiring complex visa sponsorship processes.
 
 ---
 
@@ -133,4 +142,4 @@ Family time with my two boys · Guitar · Fitness · Community service · Road t
 
 ## Keywords (for search/retrieval)
 
-Angular · TypeScript · C# · .NET · SQL · PrimeNG · SCSS · Theming · RAG · GPT · AI‑assisted UI · Sentiment Analysis · Natural‑Language Search · Performance Optimization · Lazy Loading · Code Splitting · State Management · Accessibility · Legacy Modernization · Visual WebGui Migration · UX Prototyping · A/B Testing · Product Collaboration · Agile · Frontend Architecture · End‑to‑End Delivery · Mentorship · Technical Leadership
+Angular · TypeScript · C# · .NET · SQL · PrimeNG · SCSS · Theming · RAG · GPT · AI‑assisted UI · Sentiment Analysis · Natural‑Language Search · Performance Optimization · Lazy Loading · Code Splitting · State Management · Accessibility · Legacy Modernization · Visual WebGui Migration · UX Prototyping · A/B Testing · Product Collaboration · Agile · Frontend Architecture · End‑to‑End Delivery · Mentorship · Technical Leadership · TN visa · Canadian citizen · work authorization · visa status · H-1B · I-140 · immigration · visa sponsorship
