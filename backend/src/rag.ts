@@ -246,7 +246,7 @@ import { db } from './db';
 import { OpenAI } from 'openai';
 import * as fs from 'fs';
 import * as path from 'path';
-import type { Retrieved, ImageHit } from '../../src/schemas';
+import type { Retrieved, ImageHit } from './schemas';
 
 const openai = new OpenAI({ apiKey: process.env['OPENAI_API_KEY'] });
 
