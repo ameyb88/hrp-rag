@@ -87,53 +87,126 @@ export async function answer(
   query: string,
   contexts: Retrieved[],
   images: ImageHit[]
-) {
-  const sys = `You are an HRP product assistant. Answer strictly using the provided CONTEXT.
-If you are unsure or the answer is outside CONTEXT, say you don't know.
-When helpful, reference the most relevant screenshot IDs returned by the server.
-Format:
-- Start with a concise answer.
-- Then "Why this is correct" with bullet points.
-- Then "Relevant screenshots" with up to 4 filenames (no made-up images).`;
+): Promise<{
+  answer: string;
+  screenshots: string[];
+}> {
+  console.log('[answer] Starting answer generation for:', query);
+  console.log('[answer] OpenAI client exists?', !!openai);
+  console.log(
+    '[answer] OPENAI_API_KEY exists?',
+    !!process.env['OPENAI_API_KEY']
+  );
+  console.log(
+    '[answer] MODEL_RESPONSES:',
+    process.env['MODEL_RESPONSES'] || 'not set'
+  );
 
+  if (!contexts.length) {
+    console.log('[answer] No contexts found');
+    return {
+      answer:
+        "I don't have enough information in the indexed documents to answer that.",
+      screenshots: [],
+    };
+  }
+
+  // If OpenAI is not configured, return formatted chunks
+  if (!openai) {
+    console.log('[answer] OpenAI not available - returning formatted chunks');
+    const formattedAnswer = contexts
+      .slice(0, 2)
+      .map((c, i) => {
+        const filename = c.path.split('/').pop() || c.path;
+        return `**Source ${i + 1}** (${filename})\n\n${c.text}`;
+      })
+      .join('\n\n---\n\n');
+
+    return {
+      answer: `**Answer (from docs)**\n\n${formattedAnswer}`,
+      screenshots: [],
+    };
+  }
+
+  // Prepare context for OpenAI
   const contextBlock = contexts
-    .map((c, i) => `[${i + 1}] (${c.path}#${c.chunk_index})\n${c.text}`)
+    .map((c, i) => {
+      const filename = c.path.split('/').pop() || c.path;
+      return `[Source ${i + 1}] (${filename})\n${c.text}`;
+    })
     .join('\n\n');
 
-  const imgBlock = images
-    .map((i) => `- ${i.filename}: ${i.caption}`)
-    .join('\n');
+  const imgBlock = images.length
+    ? images.map((i) => `- ${i.filename}: ${i.caption}`).join('\n')
+    : 'No screenshots available.';
 
-  // Use chat.completions instead of responses (responses API doesn't support response_format)
-  const resp = await openai.chat.completions.create({
-    model: process.env['MODEL_RESPONSES'] || 'gpt-4o-mini',
-    messages: [
-      { role: 'system', content: sys },
-      {
-        role: 'user',
-        content: `QUESTION:
+  const systemPrompt = `You are a helpful product documentation assistant. Answer questions using ONLY the provided context.
+
+Rules:
+- Give concise, direct answers in markdown format
+- If the answer isn't in the context, say "I don't know based on the available documentation"
+- Include a brief "Why this is correct" section with 2-3 bullet points
+- Only mention screenshots that are actually provided
+- Return your response as JSON with this structure: {"answer": "your markdown answer here", "screenshots": ["filename1.png"]}`;
+
+  const userPrompt = `QUESTION:
 ${query}
 
 CONTEXT:
 ${contextBlock}
 
-CANDIDATE SCREENSHOTS:
-${imgBlock}
+AVAILABLE SCREENSHOTS:
+${imgBlock}`;
 
-Return JSON with:
-{"answer": "...markdown...", "screenshots": ["file1.png", "..."]}`,
-      },
-    ],
-    response_format: { type: 'json_object' },
-  });
-
-  const text = resp.choices[0]?.message?.content || '';
-  let parsed: { answer: string; screenshots: string[] } = {
-    answer: text,
-    screenshots: [],
-  };
   try {
-    parsed = JSON.parse(text);
-  } catch {}
-  return parsed;
+    console.log('[answer] Calling OpenAI API...');
+    const resp = await openai.chat.completions.create({
+      model: process.env['MODEL_RESPONSES'] || 'gpt-4o-mini',
+      temperature: 0.3,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt },
+      ],
+      response_format: { type: 'json_object' },
+    });
+
+    console.log('[answer] OpenAI response received successfully');
+    const text = resp.choices[0]?.message?.content || '';
+
+    if (!text) {
+      console.log('[answer] Empty response from OpenAI');
+      throw new Error('Empty response from OpenAI');
+    }
+
+    const parsed: { answer: string; screenshots: string[] } = JSON.parse(text);
+    console.log('[answer] Successfully parsed JSON response');
+
+    return {
+      answer: parsed.answer || text,
+      screenshots: parsed.screenshots || [],
+    };
+  } catch (err: any) {
+    console.error('[answer] OpenAI error:', err.message);
+    console.error('[answer] Error details:', {
+      status: err.status,
+      type: err.type,
+      code: err.code,
+      param: err.param,
+    });
+
+    // Fallback to formatted chunks on error
+    console.log('[answer] Falling back to formatted chunks due to error');
+    const formattedAnswer = contexts
+      .slice(0, 2)
+      .map((c, i) => {
+        const filename = c.path.split('/').pop() || c.path;
+        return `**Source ${i + 1}** (${filename})\n\n${c.text}`;
+      })
+      .join('\n\n---\n\n');
+
+    return {
+      answer: `**Answer (from docs)**\n\n${formattedAnswer}\n\n*Note: AI formatting temporarily unavailable*`,
+      screenshots: [],
+    };
+  }
 }
