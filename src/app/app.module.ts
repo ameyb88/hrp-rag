@@ -7,7 +7,6 @@ import { ChatComponent } from './chat/chat.component';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
-import { MarkdownModule } from 'ngx-markdown';
 
 @NgModule({
   declarations: [AppComponent, ChatComponent],
@@ -17,7 +16,6 @@ import { MarkdownModule } from 'ngx-markdown';
     FormsModule,
     CommonModule,
     HttpClientModule,
-    MarkdownModule.forRoot(),
   ],
   providers: [],
   bootstrap: [AppComponent],
