@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { RagService } from '../services/rag.service';
+import { marked } from 'marked';
 
 @Component({
   selector: 'app-chat',
@@ -8,24 +9,57 @@ import { RagService } from '../services/rag.service';
 })
 export class ChatComponent {
   input = '';
-  messages: { role: 'user' | 'assistant'; text: string; shots?: string[] }[] =
-    [];
-
+  messages: {
+    role: 'user' | 'assistant';
+    text: string;
+    html?: string;
+    shots?: string[];
+  }[] = [];
   loading = false;
+  private DOMPurify: any;
 
-  constructor(private rag: RagService) {}
+  constructor(private rag: RagService) {
+    // Configure marked for better rendering
+    marked.setOptions({
+      breaks: true,
+      gfm: true,
+    });
+
+    // Load DOMPurify dynamically
+    this.loadDOMPurify();
+  }
+
+  async loadDOMPurify() {
+    const module: any = await import('dompurify');
+    this.DOMPurify = module.default || module;
+  }
 
   async send() {
     const q = this.input.trim();
     if (!q) return;
+
     this.messages.push({ role: 'user', text: q });
     this.input = '';
     this.loading = true;
+
     try {
       const res = await this.rag.ask(q).toPromise();
+      const rawText = res?.answer || '';
+
+      // Convert markdown to HTML and sanitize
+      const htmlContent = marked.parse(rawText) as string;
+
+      // Wait for DOMPurify to load if not ready
+      if (!this.DOMPurify) {
+        await this.loadDOMPurify();
+      }
+
+      const sanitizedHtml = this.DOMPurify.sanitize(htmlContent);
+
       this.messages.push({
         role: 'assistant',
-        text: res?.answer || '',
+        text: rawText,
+        html: sanitizedHtml,
         shots: res?.screenshots || [],
       });
     } finally {

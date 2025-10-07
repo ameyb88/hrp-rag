@@ -4,7 +4,17 @@
       <div class="bubble">
         <span *ngIf="m.role === 'user'" class="label">You</span>
         <span *ngIf="m.role === 'assistant'" class="label">Assistant</span>
-        <p [innerHTML]="m.text"></p>
+
+        <!-- User messages: plain text -->
+        <p *ngIf="m.role === 'user'">{{ m.text }}</p>
+
+        <!-- Assistant messages: rendered HTML -->
+        <div
+          *ngIf="m.role === 'assistant' && m.html"
+          class="markdown-content"
+          [innerHTML]="m.html"
+        ></div>
+
         <div class="shots" *ngIf="m.shots?.length">
           <img *ngFor="let s of m.shots" [src]="s" alt="screenshot" />
         </div>

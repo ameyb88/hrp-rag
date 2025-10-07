@@ -3,6 +3,8 @@
   margin: 40px auto;
   display: flex;
   flex-direction: column;
+  min-height: 200px; /* Minimum height when empty */
+  max-height: 80vh; /* Maximum height when full */
   border: 1px solid #e0e0e0;
   border-radius: 12px;
   overflow: hidden;
@@ -15,6 +17,7 @@
   padding: 16px;
   overflow-y: auto;
   background: #fafafa;
+  min-height: 0;
 }
 
 .message {
@@ -76,6 +79,7 @@
   padding: 12px;
   border-top: 1px solid #ddd;
   background: white;
+  flex-shrink: 0;
 }
 
 .input-bar input {
@@ -107,5 +111,83 @@
 
 .loading {
   font-style: italic;
+  color: #666;
+}
+
+/* Markdown content styling */
+.markdown-content {
+  color: inherit;
+}
+
+.markdown-content h1,
+.markdown-content h2,
+.markdown-content h3 {
+  margin-top: 16px;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.markdown-content h1 {
+  font-size: 1.5em;
+}
+.markdown-content h2 {
+  font-size: 1.3em;
+}
+.markdown-content h3 {
+  font-size: 1.1em;
+}
+
+.markdown-content p {
+  margin: 8px 0;
+}
+
+.markdown-content ul,
+.markdown-content ol {
+  margin: 8px 0;
+  padding-left: 24px;
+}
+
+.markdown-content li {
+  margin: 4px 0;
+}
+
+.markdown-content code {
+  background: #f4f4f4;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: "Courier New", monospace;
+  font-size: 0.9em;
+}
+
+.markdown-content pre {
+  background: #f4f4f4;
+  padding: 12px;
+  border-radius: 6px;
+  overflow-x: auto;
+  margin: 8px 0;
+}
+
+.markdown-content pre code {
+  background: none;
+  padding: 0;
+}
+
+.markdown-content strong {
+  font-weight: 600;
+}
+
+.markdown-content a {
+  color: #0078d4;
+  text-decoration: none;
+}
+
+.markdown-content a:hover {
+  text-decoration: underline;
+}
+
+.markdown-content blockquote {
+  border-left: 3px solid #ddd;
+  padding-left: 12px;
+  margin: 8px 0;
   color: #666;
 }
