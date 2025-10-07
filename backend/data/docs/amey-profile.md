@@ -1,12 +1,56 @@
-# Amey Bhalerao — Profile
+# Amey Bhalerao — Professional Profile
 
-**Headline:** Full-Stack Engineer · Frontend Architect · AI-Driven Product Builder — Angular • TypeScript • C# • SQL
+**Full-Stack Engineer · Frontend Architect · AI-Driven Product Builder**
 
 _Last updated: 2025-10-07_
 
 ---
 
-## About
+## Quick Facts
+
+- **Experience:** 13+ years in full-stack software engineering
+- **Primary Skills:** Angular, TypeScript, C#, .NET, SQL, AI/ML integration
+- **Current Role:** Senior Software Engineer at Press Ganey (2019-Present)
+- **Location:** Seattle, WA (Remote)
+- **Education:** M.S. Computer Science (UT Arlington), B.E. Computer Engineering (University of Pune)
+- **Citizenship:** Canadian citizen
+- **Current Visa:** TN visa (Trade NAFTA)
+- **Previous Visa:** H-1B visa
+- **Work Authorization:** Authorized to work in United States on TN visa
+
+---
+
+## Visa and Work Authorization Status
+
+Amey Bhalerao's current visa is the **TN visa**. The TN visa is a temporary work visa for Canadian and Mexican professionals working in the United States.
+
+**Current visa details:**
+
+- **Visa type:** TN visa (Trade NAFTA visa)
+- **Citizenship:** Canadian citizen
+- **Work authorization status:** Authorized to work in the United States
+- **Previous visa:** H-1B visa (specialty occupation)
+- **Immigration status:** I-140 petition approved in October 2016 (cap-exempt)
+
+**About the TN visa:**
+The TN visa allows Amey to work legally in the United States as a software engineer. Unlike H-1B visas, TN visas can be renewed indefinitely and have simpler sponsorship requirements. Amey is currently on a TN visa and does not require complex visa sponsorship processes.
+
+**Work authorization summary:** Amey is authorized to work in the United States on his current TN visa. He is a Canadian citizen who previously held an H-1B visa and has an approved I-140 petition.
+
+---
+
+## Education Background
+
+Amey Bhalerao has two degrees in computer science and engineering:
+
+- **Master of Science (M.S.) in Computer Science** — University of Texas at Arlington
+- **Bachelor of Engineering (B.E.) in Computer Engineering** — University of Pune
+
+His education background includes advanced studies in computer science with a Master's degree from University of Texas at Arlington and undergraduate engineering degree from University of Pune.
+
+---
+
+## Professional Summary
 
 I'm a results-driven **Full-Stack Engineer** with 13+ years of experience delivering **responsive, scalable, and user-focused web applications**. My career has focused on translating complex business needs into clean, high-performing software—primarily using **Angular, TypeScript, C#.NET, and MS SQL**.
 
@@ -20,7 +64,7 @@ I'm now seeking a **Senior Software Engineer or Engineering Manager** role where
 
 ---
 
-## Values
+## Core Values
 
 I believe great engineering goes beyond code — it's about **clarity, empathy, and impact**.
 
@@ -33,7 +77,7 @@ I believe great engineering goes beyond code — it's about **clarity, empathy, 
 
 ---
 
-## What I Bring to the Table
+## Key Strengths
 
 - 13+ years delivering **end-to-end product solutions**, from prototypes to enterprise platforms.
 - Deep expertise in **frontend architecture** (Angular, TypeScript) and **backend integration** (C#, SQL).
@@ -45,13 +89,15 @@ I believe great engineering goes beyond code — it's about **clarity, empathy, 
 
 ---
 
-## Experience
+## Work Experience
 
 ### Senior Software Engineer — Press Ganey (High Reliability Platform)
 
 _Apr 2019 – Present · Seattle, WA (Remote)_
 
-**Highlights**
+Amey currently works at Press Ganey as a Senior Software Engineer. Press Ganey is his current employer.
+
+**Key Achievements:**
 
 - Architected and delivered scalable, component-based web applications using **Angular, TypeScript, C#.NET, and MS SQL**, resulting in high-performing, responsive, and mobile-friendly UIs.
 - Led frontend modernization by replacing legacy UI with **accessible PrimeNG-based** components, improving usability, cross-browser compatibility, and maintainability.
@@ -61,7 +107,7 @@ _Apr 2019 – Present · Seattle, WA (Remote)_
 - Delivered **end-to-end features** across frontend, backend, and database layers, ensuring technical cohesion and business alignment from UI interaction to data persistence.
 - Collaborated cross‑functionally with **UX, product, QA, backend, and business** stakeholders to align technical strategy with user needs.
 
-**AI & Innovation**
+**AI & Innovation:**
 
 - Explored and integrated **AI‑assisted features** to enhance workflows and decision support — including **context‑aware form guidance**, **sentiment‑based feedback analysis**, and **natural‑language search** prototypes using **GPT** and **Retrieval‑Augmented Generation (RAG)** in a secure enterprise context.
 - Drove **rapid prototyping** and **fail‑fast** experiments to accelerate product innovation cycles.
@@ -72,11 +118,15 @@ _Apr 2019 – Present · Seattle, WA (Remote)_
 
 _Apr 2014 – Apr 2019 · Dallas–Fort Worth, TX_
 
+Amey worked at PDX Inc as a Senior Frontend Engineer and Technical Lead.
+
+**Key Achievements:**
+
 - Built enterprise‑grade, responsive web applications using **HTML5, CSS3, JavaScript, Angular (v4), Bootstrap, JSON**, and **Java**.
 - Acted as a bridge between product and engineering: gathered requirements, defined algorithms and implementation plans, and enabled sprints with clear, actionable user stories.
 - Primary point of contact for the engineering team for business logic and implementation details — reduced rework and accelerated delivery.
 - Partnered with product owners and stakeholders to research, evaluate, and prioritize features aligned to the technical roadmap.
-- **Led an international performance optimization team**, achieving **96% accuracy**, **6% revenue growth**, and **98% on‑time delivery** through planning and code performance enhancements.
+- **Led an international performance optimization team**, achieving **96% accuracy**, **6% revenue growth**, and **98% on‑time delivery** through planning and code performance enhancements. This is considered Amey's biggest achievement.
 - Designed and launched **mobile‑responsive** and **patient‑facing** web applications to improve engagement and satisfaction.
 - Directed a **UX team** to produce interactive wireframes and prototypes for a pharmacy client portal.
 - Spearheaded a **defect‑management overhaul**, increasing team productivity by **24%** through root‑cause tracking and metrics‑driven quality reviews.
@@ -87,6 +137,10 @@ _Apr 2014 – Apr 2019 · Dallas–Fort Worth, TX_
 ### Technology Solutions Consultant / Software Engineer — Hewlett‑Packard (HP)
 
 _Oct 2012 – Apr 2014_
+
+Amey worked at HP (Hewlett-Packard) as a Technology Solutions Consultant and Software Engineer.
+
+**Key Achievements:**
 
 - Designed and developed a **responsive web app for database management** using **HTML5, CSS3, JavaScript, and Bootstrap**.
 - Led the **UI design of a reporting framework** that materially improved employee productivity via streamlined data visualization.
@@ -101,6 +155,10 @@ _Oct 2012 – Apr 2014_
 
 _Jun 2012 – Dec 2012 · San Diego, CA_
 
+Amey worked at Sony Electronics as a contract Software Engineer and Android Developer.
+
+**Key Achievements:**
+
 - Designed and developed an **interactive prototype** for VAIO Engineering's product marketing needs.
 - Built **Augmented Reality (AR)** features using the **Metaio SDK**, enabling product animations and real‑time visual overlays for product identification.
 - Implemented **geo‑fencing** with Google Maps APIs and **integrated barcode scanning** for traceability.
@@ -110,36 +168,23 @@ _Jun 2012 – Dec 2012 · San Diego, CA_
 
 ---
 
-## Education
+## Company History Summary
 
-- **M.S., Computer Science** — University of Texas at Arlington
-- **B.E., Computer Engineering** — University of Pune
+Amey has worked at the following companies throughout his career:
 
----
-
-## Work Authorization and Visa Status (U.S.)
-
-**Current visa status:** Amey Bhalerao is currently working on a **TN visa** (Trade NAFTA visa for Canadian professionals).
-
-**Work authorization details:**
-
-- **Current visa type:** TN visa - a temporary work visa that allows Canadian and Mexican professionals to work in the United States
-- **Citizenship:** Canadian citizen
-- **Previous visa:** H-1B visa (specialty occupation work visa)
-- **Immigration status:** I-140 petition approved in October 2016, making him cap-exempt under current U.S. immigration rules
-- **Visa sponsorship requirements:** TN visa holders are authorized to work in the United States. The TN visa can be renewed indefinitely and does not require traditional employer sponsorship like H-1B visas do.
-- **Work authorization status:** Currently authorized to work in the United States on TN visa
-
-**Summary of work authorization:** Amey is a Canadian citizen currently working in the U.S. on a TN visa. He previously held an H-1B visa and has an approved I-140 petition. His current work authorization is valid and he is authorized to work legally in the United States. The TN visa allows him to work as a software engineer without requiring complex visa sponsorship processes.
+1. **Press Ganey** - Senior Software Engineer (2019-Present) - Current employer
+2. **PDX Inc** - Senior Frontend Engineer/Technical Lead (2014-2019)
+3. **Hewlett-Packard (HP)** - Technology Solutions Consultant (2012-2014)
+4. **Sony Electronics** - Software Engineer/Android Developer (2012)
 
 ---
 
-## Hobbies (Personal)
+## Personal Interests
 
 Family time with my two boys · Guitar · Fitness · Community service · Road trips · Healthy cooking
 
 ---
 
-## Keywords (for search/retrieval)
+## Keywords for Search
 
-Angular · TypeScript · C# · .NET · SQL · PrimeNG · SCSS · Theming · RAG · GPT · AI‑assisted UI · Sentiment Analysis · Natural‑Language Search · Performance Optimization · Lazy Loading · Code Splitting · State Management · Accessibility · Legacy Modernization · Visual WebGui Migration · UX Prototyping · A/B Testing · Product Collaboration · Agile · Frontend Architecture · End‑to‑End Delivery · Mentorship · Technical Leadership · TN visa · Canadian citizen · work authorization · visa status · H-1B · I-140 · immigration · visa sponsorship
+Angular · TypeScript · C# · .NET · SQL · PrimeNG · SCSS · Theming · RAG · GPT · AI‑assisted UI · Sentiment Analysis · Natural‑Language Search · Performance Optimization · Lazy Loading · Code Splitting · State Management · Accessibility · Legacy Modernization · Visual WebGui Migration · UX Prototyping · A/B Testing · Product Collaboration · Agile · Frontend Architecture · End‑to‑End Delivery · Mentorship · Technical Leadership · TN visa · Canadian citizen · work authorization · visa status · H-1B · I-140 · immigration · visa sponsorship · education · master's degree · computer science
