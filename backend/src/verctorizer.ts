@@ -66,4 +66,6 @@ export function cosine(a: Float32Array, b: Float32Array) {
     na += x * x;
     nb += y * y;
   }
+  const norm = Math.sqrt(na) * Math.sqrt(nb);
+  return norm > 0 ? dot / norm : 0;
 }

@@ -119,7 +119,8 @@ function assertDir(p: string) {
   }
 }
 
-function chunkText(text: string, max = 900): string[] {
+function chunkText(text: string, max = 600): string[] {
+  // Changed from 900 to 600
   const paras = text
     .split(/\n{1,2}/g)
     .map((p) => p.trim())

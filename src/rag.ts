@@ -1,13 +1,13 @@
 import { db } from '../backend/src/db';
 import { OpenAI } from 'openai';
-import fs from 'fs';
-import path from 'path';
+import * as fs from 'fs';
+import * as path from 'path';
 import type { Retrieved, ImageHit } from './schemas';
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const openai = new OpenAI({ apiKey: process.env['OPENAI_API_KEY'] });
 
 // cosine similarity in SQL via dot product is tricky without extensions;
-// we’ll bring embeddings to JS and compute cosine here (good enough for prototype).
+// we'll bring embeddings to JS and compute cosine here (good enough for prototype).
 function cosine(a: Float32Array, b: Float32Array) {
   let dot = 0,
     na = 0,
@@ -55,7 +55,7 @@ export async function retrieve(
   topK = 6
 ): Promise<{ contexts: Retrieved[]; images: ImageHit[] }> {
   const { data } = await openai.embeddings.create({
-    model: process.env.MODEL_EMBEDDINGS || 'text-embedding-3-large',
+    model: process.env['MODEL_EMBEDDINGS'] || 'text-embedding-3-large',
     input: query,
   });
 
@@ -104,10 +104,10 @@ Format:
     .map((i) => `- ${i.filename}: ${i.caption}`)
     .join('\n');
 
-  // Responses API (supports images & structured outputs; we’re just returning text + image list). :contentReference[oaicite:3]{index=3}
-  const resp = await openai.responses.create({
-    model: process.env.MODEL_RESPONSES || 'gpt-5',
-    input: [
+  // Use chat.completions instead of responses (responses API doesn't support response_format)
+  const resp = await openai.chat.completions.create({
+    model: process.env['MODEL_RESPONSES'] || 'gpt-4o-mini',
+    messages: [
       { role: 'system', content: sys },
       {
         role: 'user',
@@ -124,11 +124,10 @@ Return JSON with:
 {"answer": "...markdown...", "screenshots": ["file1.png", "..."]}`,
       },
     ],
-    // latency tips / KV cache: keep static prefix stable, put dynamic inserts later. :contentReference[oaicite:4]{index=4}
     response_format: { type: 'json_object' },
   });
 
-  const text = resp.output_text || '';
+  const text = resp.choices[0]?.message?.content || '';
   let parsed: { answer: string; screenshots: string[] } = {
     answer: text,
     screenshots: [],
