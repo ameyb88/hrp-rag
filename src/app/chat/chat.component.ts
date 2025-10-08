@@ -17,6 +17,7 @@ export class ChatComponent {
   }[] = [];
   loading = false;
   private DOMPurify: any;
+  mobileMenuOpen = false;
 
   constructor(private rag: RagService) {
     // Configure marked for better rendering
@@ -78,5 +79,14 @@ export class ChatComponent {
     if (messagesContainer) {
       messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
+  }
+
+  toggleMobileMenu() {
+    this.mobileMenuOpen = !this.mobileMenuOpen;
+  }
+
+  askQuestionAndClose(question: string) {
+    this.askQuestion(question);
+    this.mobileMenuOpen = false;
   }
 }
