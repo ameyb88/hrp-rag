@@ -62,8 +62,21 @@ export class ChatComponent {
         html: sanitizedHtml,
         shots: res?.screenshots || [],
       });
+      setTimeout(() => this.scrollToBottom(), 100);
     } finally {
       this.loading = false;
+    }
+  }
+
+  askQuestion(question: string) {
+    this.input = question;
+    this.send();
+  }
+
+  private scrollToBottom() {
+    const messagesContainer = document.querySelector('.chat-messages');
+    if (messagesContainer) {
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
   }
 }

@@ -1,14 +1,15 @@
-<div class="chat-container">
+<!--
+  FOR GENERIC APPLICATION,USE THE BELOW HTML. IT WORKS PERFECTLY FINE.
+-->
+<!-- <div class="chat-container">
   <div class="chat-window">
     <div *ngFor="let m of messages" class="message" [ngClass]="m.role">
       <div class="bubble">
         <span *ngIf="m.role === 'user'" class="label">You</span>
         <span *ngIf="m.role === 'assistant'" class="label">Assistant</span>
 
-        <!-- User messages: plain text -->
         <p *ngIf="m.role === 'user'">{{ m.text }}</p>
 
-        <!-- Assistant messages: rendered HTML -->
         <div
           *ngIf="m.role === 'assistant' && m.html"
           class="markdown-content"
@@ -31,5 +32,326 @@
       placeholder="Ask Me.."
     />
     <button (click)="send()" [disabled]="loading || !input.trim()">Send</button>
+  </div>
+</div> -->
+
+<!--
+  USE THIS HTML ONLY TO PROVIDE AMEY SPECIFIC INFO
+-->
+
+<!-- chat.component.html -->
+<div class="chat-page">
+  <!-- Header -->
+  <div class="chat-header">
+    <div class="header-content">
+      <div class="avatar">AB</div>
+      <div class="header-text">
+        <h1>Ask About Amey</h1>
+        <p>AI-powered Q&A about my professional experience</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="chat-main">
+    <!-- Suggested Questions Sidebar -->
+    <div class="suggestions-panel">
+      <h3>💡 Suggested Questions</h3>
+      <div class="suggestion-group">
+        <h4>Background</h4>
+        <button
+          class="suggestion-btn"
+          (click)="
+            askQuestion(
+              'Can you give me a professional summary of Amey Bhalerao?'
+            )
+          "
+        >
+          <span class="suggestion-text">Professional summary</span>
+          <svg
+            class="copy-icon"
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="none"
+          >
+            <path
+              d="M10.5 2.5h-7v10h7v-10z"
+              stroke="currentColor"
+              stroke-width="1.5"
+            />
+            <path
+              d="M12.5 4.5v10h-7"
+              stroke="currentColor"
+              stroke-width="1.5"
+            />
+          </svg>
+        </button>
+        <button
+          class="suggestion-btn"
+          (click)="askQuestion('What are Amey\'s core technical skills?')"
+        >
+          <span class="suggestion-text">Technical skills</span>
+          <svg
+            class="copy-icon"
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="none"
+          >
+            <path
+              d="M10.5 2.5h-7v10h7v-10z"
+              stroke="currentColor"
+              stroke-width="1.5"
+            />
+            <path
+              d="M12.5 4.5v10h-7"
+              stroke="currentColor"
+              stroke-width="1.5"
+            />
+          </svg>
+        </button>
+      </div>
+
+      <div class="suggestion-group">
+        <h4>Experience</h4>
+        <button
+          class="suggestion-btn"
+          (click)="askQuestion('What companies has Amey worked for?')"
+        >
+          <span class="suggestion-text">Work history</span>
+          <svg
+            class="copy-icon"
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="none"
+          >
+            <path
+              d="M10.5 2.5h-7v10h7v-10z"
+              stroke="currentColor"
+              stroke-width="1.5"
+            />
+            <path
+              d="M12.5 4.5v10h-7"
+              stroke="currentColor"
+              stroke-width="1.5"
+            />
+          </svg>
+        </button>
+        <button
+          class="suggestion-btn"
+          (click)="askQuestion('What is Amey\'s biggest achievement?')"
+        >
+          <span class="suggestion-text">Key achievements</span>
+          <svg
+            class="copy-icon"
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="none"
+          >
+            <path
+              d="M10.5 2.5h-7v10h7v-10z"
+              stroke="currentColor"
+              stroke-width="1.5"
+            />
+            <path
+              d="M12.5 4.5v10h-7"
+              stroke="currentColor"
+              stroke-width="1.5"
+            />
+          </svg>
+        </button>
+        <button
+          class="suggestion-btn"
+          (click)="askQuestion('Tell me about Amey\'s AI/ML experience')"
+        >
+          <span class="suggestion-text">AI/ML experience</span>
+          <svg
+            class="copy-icon"
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="none"
+          >
+            <path
+              d="M10.5 2.5h-7v10h7v-10z"
+              stroke="currentColor"
+              stroke-width="1.5"
+            />
+            <path
+              d="M12.5 4.5v10h-7"
+              stroke="currentColor"
+              stroke-width="1.5"
+            />
+          </svg>
+        </button>
+      </div>
+
+      <div class="suggestion-group">
+        <h4>Logistics</h4>
+        <button
+          class="suggestion-btn"
+          (click)="askQuestion('What is Amey\'s work authorization status?')"
+        >
+          <span class="suggestion-text">Work authorization</span>
+          <svg
+            class="copy-icon"
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="none"
+          >
+            <path
+              d="M10.5 2.5h-7v10h7v-10z"
+              stroke="currentColor"
+              stroke-width="1.5"
+            />
+            <path
+              d="M12.5 4.5v10h-7"
+              stroke="currentColor"
+              stroke-width="1.5"
+            />
+          </svg>
+        </button>
+        <button
+          class="suggestion-btn"
+          (click)="askQuestion('What is Amey\'s education background?')"
+        >
+          <span class="suggestion-text">Education</span>
+          <svg
+            class="copy-icon"
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="none"
+          >
+            <path
+              d="M10.5 2.5h-7v10h7v-10z"
+              stroke="currentColor"
+              stroke-width="1.5"
+            />
+            <path
+              d="M12.5 4.5v10h-7"
+              stroke="currentColor"
+              stroke-width="1.5"
+            />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Chat Window -->
+    <div class="chat-container">
+      <!-- Empty State -->
+      <div class="empty-state" *ngIf="messages.length === 0">
+        <div class="empty-icon">💬</div>
+        <h2>Ask me anything about Amey</h2>
+        <p>
+          I can answer questions about his experience, skills, education, and
+          work authorization.
+        </p>
+        <div class="quick-start">
+          <p class="quick-start-label">Try asking:</p>
+          <div class="quick-chips">
+            <button
+              class="chip"
+              (click)="askQuestion('What are Amey\'s core skills?')"
+            >
+              Core skills
+            </button>
+            <button
+              class="chip"
+              (click)="askQuestion('Tell me about his work history')"
+            >
+              Work history
+            </button>
+            <button
+              class="chip"
+              (click)="askQuestion('What\'s his biggest achievement?')"
+            >
+              Achievements
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Messages -->
+      <div class="chat-messages" *ngIf="messages.length > 0">
+        <div *ngFor="let m of messages" class="message" [ngClass]="m.role">
+          <div class="message-avatar" *ngIf="m.role === 'assistant'">
+            <span>🤖</span>
+          </div>
+          <div class="bubble">
+            <span class="label" *ngIf="m.role === 'user'">You</span>
+            <span class="label" *ngIf="m.role === 'assistant'"
+              >AI Assistant</span
+            >
+
+            <!-- User messages: plain text -->
+            <p *ngIf="m.role === 'user'" class="user-message">{{ m.text }}</p>
+
+            <!-- Assistant messages: rendered HTML -->
+            <div
+              *ngIf="m.role === 'assistant' && m.html"
+              class="markdown-content"
+              [innerHTML]="m.html"
+            ></div>
+
+            <div class="shots" *ngIf="m.shots?.length">
+              <img *ngFor="let s of m.shots" [src]="s" alt="screenshot" />
+            </div>
+          </div>
+          <div class="message-avatar" *ngIf="m.role === 'user'">
+            <span>👤</span>
+          </div>
+        </div>
+
+        <!-- Loading indicator -->
+        <div class="message assistant" *ngIf="loading">
+          <div class="message-avatar">
+            <span>🤖</span>
+          </div>
+          <div class="bubble typing">
+            <div class="typing-indicator">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Input Bar -->
+      <div class="input-bar">
+        <div class="input-wrapper">
+          <input
+            [(ngModel)]="input"
+            name="prompt"
+            (keydown.enter)="send()"
+            placeholder="Ask about skills, experience, education..."
+            [disabled]="loading"
+          />
+          <button
+            class="send-btn"
+            (click)="send()"
+            [disabled]="loading || !input.trim()"
+            [class.sending]="loading"
+          >
+            <svg
+              *ngIf="!loading"
+              width="20"
+              height="20"
+              viewBox="0 0 20 20"
+              fill="none"
+            >
+              <path d="M2 10l16-8-8 16-2-8-6-0z" fill="currentColor" />
+            </svg>
+            <span *ngIf="loading" class="spinner"></span>
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>

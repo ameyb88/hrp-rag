@@ -423,7 +423,7 @@ export async function answer(
 Rules:
 - Give concise, direct answers in markdown format
 - Start with a clear, direct answer to the question
-- Follow with a brief "Why this is correct" section with 2-3 bullet points
+- Follow with a brief "Details:" section with 2-3 bullet points
 - If the answer isn't in the context, say "I don't know based on the available documentation"
 - Use natural, conversational language
 - Do NOT include source citations in your answer (they're already tracked separately)`;

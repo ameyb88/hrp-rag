@@ -1,3 +1,7 @@
+## About Me
+
+My name is Amey Bhalerao.
+
 # Amey Bhalerao — Professional Profile
 
 **Full-Stack Engineer · Frontend Architect · AI-Driven Product Builder**
