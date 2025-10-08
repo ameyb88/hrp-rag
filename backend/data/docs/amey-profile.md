@@ -17,7 +17,9 @@ _Last updated: 2025-10-07_
 
 ## Quick Facts
 
-- **Experience:** 13+ years in full-stack software engineering
+- **Total Years of Experience:** 13+ years in full-stack software engineering
+- **Number of Companies Worked For:** 4 companies (Press Ganey, PDX Inc, HP, Sony Electronics)
+- **Current Company:** Press Ganey & Associates (2019-Present)
 - **Primary Skills:** Angular (v9-17), TypeScript, C#, .NET, SQL, AI/ML integration
 - **Current Role:** Senior Software Engineer (AI Integration) at Press Ganey & Associates (2019-Present)
 - **Location:** Seattle, WA (Remote)
@@ -26,6 +28,9 @@ _Last updated: 2025-10-07_
 - **Current Visa:** TN visa (Trade NAFTA)
 - **Previous Visa:** H-1B visa
 - **Work Authorization:** Authorized to work in United States on TN visa
+- **Total Companies:** 4 (Press Ganey, PDX Inc, Hewlett-Packard, Sony Electronics)
+- **Years at Current Company:** 6 years (2019-Present)
+- **Industry Focus:** Healthcare Technology, Enterprise Software, Performance Optimization
 
 ---
 
@@ -122,8 +127,15 @@ Press Ganey is Amey's current employer. This is where he currently works as a Se
 
 - Architected and delivered scalable **Angular 17 SPAs** and **reusable UI component libraries**, increasing **development efficiency by 30%** and ensuring **brand consistency** across enterprise healthcare applications.
 - Led a **multi-quarter modernization program** migrating legacy monolith modules into modular Angular applications; defined architectural standards, rollout strategy, and performance monitoring, resulting in **50% faster feature delivery** and improved maintainability.
-- Led the migration of a **Visual WebGui** application to modern Angular, reverse‑engineering undocumented components and reusing API integrations to build a modular, intuitive UI.
-- Owned and executed a **custom theming framework**: replaced Bootstrap with **PrimeNG Designer API**, built dynamic **SCSS-based** branding layers, and standardized **reusable styling variables** and shared components.
+- **Complete Frontend Overhaul (2019)**: Led the transformation of the platform's frontend by upgrading Angular, completely removing Bootstrap, transitioning to PrimeNG, and creating a custom theming application that allowed enterprise customers to apply their branding dynamically. Successfully delivered on a tight deadline while maintaining stability and zero regression in existing functionalities.
+- **Custom Theming Engine**: Rather than purchasing expensive licensing or migrating to Angular Material, reverse-engineered PrimeNG's theme architecture and built a cost-effective custom theming engine using SCSS and JSON configuration. This solution gave enterprise customers full control over branding (colors, fonts, logos, UI elements) while avoiding a 6+ month rewrite and saving thousands in licensing fees. The framework became reusable across all modules, enabling client-specific themes to be implemented in hours instead of weeks.
+- **Legacy Application Modernization**: Successfully modernized an internal-facing legacy application built on Visual Web GUI with zero documentation or SME knowledge transfer. Reverse-engineered the entire system by analyzing component interactions and API calls, then redesigned it with a modern frontend stack. The new external-facing UI improved user experience dramatically, reduced user errors, and decreased onboarding time. Managed scope changes and requirement evolution while delivering core functionalities on schedule.
+
+**Mobile & Responsive Design:**
+
+- **Mobile-Responsive Healthcare Application**: Led the development of a mobile-responsive version of the platform, enabling healthcare professionals to report patient safety events and manage tasks on-the-go. Conducted comprehensive analysis of dynamic form components to maximize reuse between desktop and mobile. Created strategic component adaptations (replacing modals with mobile-friendly alternatives) and wrote extensive media queries for cross-device compatibility. **Improved reporting rates by 35%** and **reduced maintenance overhead by 60%** compared to separate codebases. The documentation and test plans created became the standard for future mobile development.
+- Engineered **mobile-responsive** and **WCAG 2.1–compliant designs**, expanding accessibility for thousands of frontline healthcare users across devices.
+- Used BrowserStack for comprehensive device compatibility testing across various screen sizes and orientations.
 
 **Performance & Reliability:**
 
@@ -133,20 +145,29 @@ Press Ganey is Amey's current employer. This is where he currently works as a Se
 
 **Accessibility & Design:**
 
-- Engineered **mobile-responsive** and **WCAG 2.1–compliant designs**, expanding accessibility for thousands of frontline healthcare users across devices.
 - Led frontend modernization by replacing legacy UI with **accessible PrimeNG-based** components, improving usability, cross-browser compatibility, and maintainability.
+- Owned and executed the theming framework: replaced Bootstrap with **PrimeNG Designer API**, built dynamic **SCSS-based** branding layers, and standardized **reusable styling variables** and shared components.
 
 **Leadership & Culture:**
 
 - Championed engineering culture and strategy: established **OKRs**, introduced **roadmap-driven planning**, and aligned execution with business goals, improving cross-team delivery predictability.
 - Mentored and coached **junior/mid-level engineers** through design reviews, onboarding, and documentation; drove adoption of company-wide engineering best practices.
 - Regularly presented technical updates, demos, and roadmap progress to **senior leadership**, influencing product strategy and ensuring alignment across engineering, product, and design teams.
+- Led workshops for other teams on effective mobile adaptation strategies and theming best practices.
 - Collaborated cross‑functionally with **UX, product, QA, backend, and business** stakeholders to align technical strategy with user needs.
 
 **Technical Execution:**
 
 - Delivered **end-to-end features** across frontend, backend, and database layers, ensuring technical cohesion and business alignment from UI interaction to data persistence.
 - Boosted performance via **lazy loading, code splitting, and efficient state management**, reducing load times and improving perceived responsiveness.
+- Created comprehensive documentation with clear rationales for technical decisions, improving knowledge sharing and onboarding.
+- Conducted continuous feedback loops with product teams to define and refine requirements while managing scope creep effectively.
+
+**Problem-Solving & Innovation:**
+
+- Demonstrated ability to evaluate multiple technical solutions objectively, weighing cost, effort, and long-term maintainability.
+- Proved that innovative solutions don't always require expensive purchases or complete rewrites—sometimes the right engineering approach delivers better results.
+- Successfully navigated projects with minimal documentation by reverse-engineering systems and learning through hands-on exploration.
 
 ---
 
@@ -217,6 +238,23 @@ _Jun 2012 – Dec 2012 · San Diego, CA_
 
 ---
 
+## How Many Companies Has Amey Worked For?
+
+Amey Bhalerao has worked for **4 companies** throughout his career:
+
+1. **Press Ganey & Associates** (2019-Present) - Current employer - 6 years
+2. **PDX Inc** (2014-2019) - 5 years
+3. **Hewlett-Packard (HP)** (2012-2014) - 2 years
+4. **Sony Electronics** (2012) - Contract position - 6 months
+
+**Total Professional Experience: 13+ years**
+
+**Current Company:** Press Ganey & Associates (since 2019)
+**Total Number of Companies:** 4 companies
+**Longest Tenure:** PDX Inc (5 years) and Press Ganey (6 years and counting)
+
+---
+
 ## Company History Summary
 
 Amey has worked at the following companies throughout his career:
@@ -237,34 +275,65 @@ When asked about Amey's major achievements, here are the key highlights:
 - Led an international team achieving **96% accuracy**, **6% revenue growth**, and **98% on-time delivery**
 - **This is Amey's biggest and most notable career achievement**
 
-### 2. AI-Powered Feature Integration (Press Ganey)
+### 2. Custom Theming Engine Development (Press Ganey)
+
+- Reverse-engineered PrimeNG's architecture to build a cost-effective custom theming solution
+- Avoided a **6+ month Angular Material migration** and saved **thousands in licensing fees**
+- Enabled enterprise customers to apply full branding (colors, fonts, logos) dynamically
+- Created a **reusable framework** allowing client-specific themes to be implemented in **hours instead of weeks**
+- Demonstrated innovative problem-solving by building rather than buying expensive solutions
+
+### 3. Complete Frontend Overhaul (Press Ganey - 2019)
+
+- Led transformation from Bootstrap to PrimeNG on a tight deadline
+- Upgraded Angular version while maintaining zero regression
+- Built custom theming application for enterprise branding
+- Successfully delivered on time despite large scope and high quality requirements
+
+### 4. Legacy System Modernization with Zero Documentation (Press Ganey)
+
+- Reverse-engineered Visual Web GUI legacy application with no SME or documentation
+- Redesigned for external-facing use with modern, intuitive UI
+- Reduced user errors and onboarding time significantly
+- Managed scope changes while delivering core functionalities on schedule
+
+### 5. Mobile-Responsive Healthcare Platform (Press Ganey)
+
+- Led development of mobile version for patient safety event reporting
+- **Improved reporting rates by 35%**
+- **Reduced maintenance overhead by 60%** through strategic component reuse
+- Created documentation and test plans that became team standards
+- Led workshops on mobile adaptation strategies for other teams
+
+### 6. AI-Powered Feature Integration (Press Ganey)
 
 - Integrated OpenAI GPT and Google Sentiment APIs
 - **Reduced manual review time by 40%**
 - Enabled clinicians to detect risks earlier through real-time feedback analysis
 
-### 3. Multi-Quarter Modernization Program (Press Ganey)
+### 7. Multi-Quarter Modernization Program (Press Ganey)
 
 - Led migration from legacy monolith to modular Angular applications
 - Achieved **50% faster feature delivery**
 - Increased development efficiency by **30%** through reusable component libraries
 
-### 4. Performance Optimization Excellence (Press Ganey)
+### 8. Performance Optimization Excellence (Press Ganey)
 
 - **40% faster page loads** through lazy loading and state management
 - **25% improvement in API response times** through backend optimization
 - **35% reduction in incident resolution time** through better observability
 
-### 5. Process Automation & Efficiency (PDX Inc)
+### 9. Process Automation & Efficiency (PDX Inc)
 
 - **40% reduction in data preparation time** through scalable pipelines
 - **30% faster prescription processing** through workflow automation
 - **24% increase in team productivity** through defect management overhaul
 
-### 6. Accessibility & User Impact (Press Ganey)
+### 10. Accessibility & User Impact (Press Ganey)
 
 - WCAG 2.1-compliant designs serving thousands of healthcare workers
 - Mobile-responsive applications expanding accessibility across devices
+- Comprehensive cross-device testing using BrowserStack
 
 ---
 
@@ -356,6 +425,96 @@ Library for embedding previews of already-uploaded files inside enterprise Angul
 - Community service
 - Road trips and travel
 - Healthy cooking
+
+## Frequently Asked Questions
+
+### How many years of experience does Amey have?
+
+Amey has **13+ years of professional experience** in software engineering, spanning from 2012 to present (2025).
+
+### How many companies has Amey worked for?
+
+Amey has worked for **4 companies**:
+
+1. Press Ganey & Associates (Current - 6 years)
+2. PDX Inc (5 years)
+3. Hewlett-Packard/HP (2 years)
+4. Sony Electronics (6 months contract)
+
+### What is Amey's current company?
+
+Amey currently works at **Press Ganey & Associates** as a Senior Software Engineer focusing on AI Integration. He has been with Press Ganey since 2019 (6 years).
+
+### What are Amey's primary technical skills?
+
+- **Frontend:** Angular (v9-17), React, TypeScript, JavaScript
+- **Backend:** C#, .NET, Dapper, REST APIs, MS SQL
+- **AI/Cloud:** OpenAI API, Google Sentiment API, Azure, RAG
+- **Architecture:** Lazy Loading, Microfrontend Architecture, NgRx, Performance Optimization
+
+### What is Amey's visa status?
+
+Amey is a **Canadian citizen** currently on a **TN visa** (Trade NAFTA). He is authorized to work in the United States. He previously held an H-1B visa and has an approved I-140 petition.
+
+### What is Amey's biggest achievement?
+
+Amey's biggest achievement was **leading an international performance optimization team at PDX Inc**, achieving:
+
+- 96% accuracy
+- 6% revenue growth
+- 98% on-time delivery
+
+### Does Amey have experience with legacy system modernization?
+
+Yes, Amey has extensive experience modernizing legacy systems:
+
+- Successfully modernized a Visual Web GUI application with zero documentation
+- Reverse-engineered complex systems by analyzing component interactions and API calls
+- Led complete frontend overhaul in 2019, upgrading Angular and removing Bootstrap
+- Migrated monolith applications to modular Angular architecture
+- Achieved 50% faster feature delivery through modernization efforts
+
+### Does Amey have experience with custom theming and branding?
+
+Yes, Amey designed and built a custom theming engine from scratch:
+
+- Reverse-engineered PrimeNG's theme architecture
+- Built cost-effective solution using SCSS and JSON configuration
+- Enabled full enterprise branding control (colors, fonts, logos, UI elements)
+- Avoided 6+ month rewrite and saved thousands in licensing fees
+- Created reusable framework deployed across all modules
+- Allows client-specific themes to be implemented in hours instead of weeks
+
+### Has Amey led mobile development projects?
+
+Yes, Amey led mobile-responsive platform development:
+
+- Built mobile version for patient safety event reporting in healthcare
+- Improved reporting rates by 35%
+- Reduced maintenance overhead by 60% through component reuse
+- Created comprehensive test plans using BrowserStack
+- Led workshops on mobile adaptation strategies
+- Developed strategic framework for mobile-first feature prioritization
+
+### Does Amey have experience working without documentation?
+
+Yes, Amey has proven ability to work with minimal or zero documentation:
+
+- Reverse-engineered Visual Web GUI legacy system with no SME knowledge transfer
+- Learned systems through hands-on exploration and API analysis
+- Created comprehensive documentation for future teams
+- Developed strategic approaches to understanding undocumented codebases
+
+### What problem-solving approaches does Amey use?
+
+Amey demonstrates strong problem-solving skills:
+
+- Evaluates multiple solutions objectively (build vs. buy vs. rewrite)
+- Weighs cost, effort, and long-term maintainability
+- Proven ability to build innovative solutions rather than purchasing expensive alternatives
+- Reverse-engineering complex systems
+- Managing scope changes while delivering on deadlines
+- Creating reusable frameworks for long-term value
 
 ---
 
