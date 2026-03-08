@@ -1,4 +1,3 @@
-// backend/src/db.ts
 import Database from 'better-sqlite3';
 import * as path from 'path';
 
@@ -17,4 +16,12 @@ CREATE TABLE IF NOT EXISTS chunks (
 );
 CREATE INDEX IF NOT EXISTS idx_chunks_doc ON chunks(doc_id);
 CREATE INDEX IF NOT EXISTS idx_chunks_path ON chunks(path);
+
+CREATE TABLE IF NOT EXISTS documents (
+  id INTEGER PRIMARY KEY,
+  filename TEXT UNIQUE,
+  file_type TEXT,
+  chunk_count INTEGER,
+  ingested_at TEXT DEFAULT (datetime('now'))
+);
 `);
