@@ -30,7 +30,11 @@ const upload = multer({
     if (allowed.includes(ext)) {
       cb(null, true);
     } else {
-      cb(new Error(`Unsupported file type: ${ext}. Allowed: ${allowed.join(', ')}`));
+      cb(
+        new Error(
+          `Unsupported file type: ${ext}. Allowed: ${allowed.join(', ')}`,
+        ),
+      );
     }
   },
   limits: { fileSize: 50 * 1024 * 1024 },
@@ -66,11 +70,19 @@ app.post('/api/upload', upload.array('files', 20), async (req: any, res) => {
   for (const file of files) {
     try {
       const chunkCount = await ingestFile(file.path, file.originalname);
-      results.push({ file: file.originalname, chunks: chunkCount, status: 'ok' });
+      results.push({
+        file: file.originalname,
+        chunks: chunkCount,
+        status: 'ok',
+      });
       // Clean up temp file
       fs.unlinkSync(file.path);
     } catch (err: any) {
-      results.push({ file: file.originalname, error: err.message, status: 'error' });
+      results.push({
+        file: file.originalname,
+        error: err.message,
+        status: 'error',
+      });
     }
   }
 
@@ -82,8 +94,14 @@ app.post('/api/upload', upload.array('files', 20), async (req: any, res) => {
 
 // --- New: List indexed documents ---
 app.get('/api/documents', (_req, res) => {
-  const docs = db.prepare('SELECT filename, file_type, chunk_count, ingested_at FROM documents ORDER BY ingested_at DESC').all();
-  const totalChunks = db.prepare('SELECT COUNT(*) as count FROM chunks').get() as any;
+  const docs = db
+    .prepare(
+      'SELECT filename, file_type, chunk_count, ingested_at FROM documents ORDER BY ingested_at DESC',
+    )
+    .all();
+  const totalChunks = db
+    .prepare('SELECT COUNT(*) as count FROM chunks')
+    .get() as any;
   res.json({ documents: docs, totalChunks: totalChunks.count });
 });
 

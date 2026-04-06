@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin - Document Manager</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background: #f5f5f5;
+        padding: 40px;
+      }
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+      }
+      h1 {
+        font-size: 24px;
+        margin-bottom: 8px;
+      }
+      .subtitle {
+        color: #666;
+        margin-bottom: 32px;
+      }
+
+      .card {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 20px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+      .card h2 {
+        font-size: 18px;
+        margin-bottom: 16px;
+      }
+
+      .upload-area {
+        border: 2px dashed #ddd;
+        border-radius: 8px;
+        padding: 32px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .upload-area:hover,
+      .upload-area.dragover {
+        border-color: #4a6cf7;
+        background: #f8f9ff;
+      }
+      .upload-area input {
+        display: none;
+      }
+      .upload-area p {
+        color: #888;
+        margin-top: 8px;
+        font-size: 14px;
+      }
+
+      .btn {
+        background: #4a6cf7;
+        color: white;
+        border: none;
+        padding: 10px 24px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+      }
+      .btn:hover {
+        background: #3a5ce5;
+      }
+      .btn-sm {
+        padding: 6px 14px;
+        font-size: 12px;
+      }
+      .btn-danger {
+        background: #e74c3c;
+      }
+      .btn-danger:hover {
+        background: #c0392b;
+      }
+
+      .status {
+        margin-top: 16px;
+        font-size: 14px;
+        color: #666;
+        white-space: pre-wrap;
+      }
+      .status.error {
+        color: #e74c3c;
+      }
+
+      .stats {
+        display: flex;
+        gap: 24px;
+        margin-bottom: 16px;
+      }
+      .stat {
+        text-align: center;
+      }
+      .stat-value {
+        font-size: 28px;
+        font-weight: 700;
+        color: #4a6cf7;
+      }
+      .stat-label {
+        font-size: 12px;
+        color: #888;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 10px 12px;
+        border-bottom: 1px solid #eee;
+        font-size: 14px;
+      }
+      th {
+        font-weight: 600;
+        color: #666;
+        font-size: 12px;
+        text-transform: uppercase;
+      }
+      td:last-child {
+        text-align: right;
+      }
+      .empty {
+        color: #aaa;
+        text-align: center;
+        padding: 24px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Document Manager</h1>
+      <p class="subtitle">
+        Upload PDF, Markdown, or text files for the chatbot knowledge base
+      </p>
+
+      <div class="card">
+        <div class="stats" id="stats">
+          <div class="stat">
+            <div class="stat-value" id="docCount">-</div>
+            <div class="stat-label">Documents</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value" id="chunkCount">-</div>
+            <div class="stat-label">Chunks</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Upload Documents</h2>
+        <div class="upload-area" id="uploadArea">
+          <button
+            class="btn"
+            onclick="document.getElementById('fileInput').click()"
+          >
+            Choose Files
+          </button>
+          <input type="file" id="fileInput" accept=".pdf,.md,.txt" multiple />
+          <p>Drag & drop PDF, .md, or .txt files here</p>
+        </div>
+        <div class="status" id="uploadStatus"></div>
+      </div>
+
+      <div class="card">
+        <h2>Indexed Documents</h2>
+        <div id="docList"><p class="empty">Loading...</p></div>
+      </div>
+    </div>
+
+    <script>
+      const uploadArea = document.getElementById("uploadArea");
+      const fileInput = document.getElementById("fileInput");
+      const uploadStatus = document.getElementById("uploadStatus");
+
+      uploadArea.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        uploadArea.classList.add("dragover");
+      });
+      uploadArea.addEventListener("dragleave", () =>
+        uploadArea.classList.remove("dragover"),
+      );
+      uploadArea.addEventListener("drop", (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove("dragover");
+        const files = Array.from(e.dataTransfer.files);
+        if (files.length) uploadFiles(files);
+      });
+      fileInput.addEventListener("change", () => {
+        if (fileInput.files.length) uploadFiles(Array.from(fileInput.files));
+      });
+
+      async function uploadFiles(files) {
+        uploadStatus.textContent = `Processing ${files.length} file(s)... This may take a minute for large PDFs.`;
+        uploadStatus.className = "status";
+        const formData = new FormData();
+        files.forEach((f) => formData.append("files", f));
+
+        try {
+          const res = await fetch("/api/upload", {
+            method: "POST",
+            body: formData,
+          });
+          const data = await res.json();
+          uploadStatus.textContent = data.results
+            .map((r) =>
+              r.status === "ok"
+                ? `${r.file}: ${r.chunks} chunks indexed`
+                : `${r.file}: ERROR - ${r.error}`,
+            )
+            .join("\n");
+          refreshDocs();
+        } catch (err) {
+          uploadStatus.textContent = `Error: ${err.message}`;
+          uploadStatus.className = "status error";
+        }
+      }
+
+      async function refreshDocs() {
+        try {
+          const res = await fetch("/api/documents");
+          const data = await res.json();
+
+          document.getElementById("docCount").textContent =
+            data.documents.length;
+          document.getElementById("chunkCount").textContent = data.totalChunks;
+
+          const list = document.getElementById("docList");
+          if (data.documents.length === 0) {
+            list.innerHTML =
+              '<p class="empty">No documents indexed yet. Upload some files above.</p>';
+            return;
+          }
+          list.innerHTML = `<table>
+          <tr><th>File</th><th>Type</th><th>Chunks</th><th>Indexed</th><th></th></tr>
+          ${data.documents
+            .map(
+              (d) => `<tr>
+            <td>${d.filename}</td>
+            <td>${d.file_type}</td>
+            <td>${d.chunk_count}</td>
+            <td>${new Date(d.ingested_at).toLocaleDateString()}</td>
+            <td><button class="btn btn-sm btn-danger" onclick="deleteDoc('${d.filename}')">Delete</button></td>
+          </tr>`,
+            )
+            .join("")}
+        </table>`;
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      async function deleteDoc(filename) {
+        if (!confirm(`Delete "${filename}" and all its chunks?`)) return;
+        await fetch(`/api/documents/${encodeURIComponent(filename)}`, {
+          method: "DELETE",
+        });
+        refreshDocs();
+      }
+
+      refreshDocs();
+    </script>
+  </body>
+</html>

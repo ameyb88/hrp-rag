@@ -37,11 +37,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.db = void 0;
-// backend/src/db.ts
 const better_sqlite3_1 = __importDefault(require("better-sqlite3"));
 const path = __importStar(require("path"));
 const DB_PATH = path.resolve(__dirname, '..', 'rag.sqlite');
 exports.db = new better_sqlite3_1.default(DB_PATH);
+// Create schema if it doesn't exist
 exports.db.exec(`
 CREATE TABLE IF NOT EXISTS chunks (
   id INTEGER PRIMARY KEY,
@@ -52,4 +52,13 @@ CREATE TABLE IF NOT EXISTS chunks (
   embedding BLOB
 );
 CREATE INDEX IF NOT EXISTS idx_chunks_doc ON chunks(doc_id);
+CREATE INDEX IF NOT EXISTS idx_chunks_path ON chunks(path);
+
+CREATE TABLE IF NOT EXISTS documents (
+  id INTEGER PRIMARY KEY,
+  filename TEXT UNIQUE,
+  file_type TEXT,
+  chunk_count INTEGER,
+  ingested_at TEXT DEFAULT (datetime('now'))
+);
 `);

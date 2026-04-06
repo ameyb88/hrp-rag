@@ -1,9 +1,11 @@
 "use strict";
-// import * as fs from 'fs';
-// import * as path from 'path';
-// import { db } from './db';
-// import { buildVocabAndIdf, tfidfVector } from '../src/verctorizer';
-// const pdf = require('pdf-parse');
+/**
+ * Document ingestion — parses PDF/MD/TXT files, chunks, embeds with local model, stores in SQLite.
+ *
+ * Usage:
+ *   npm run ingest                           # ingest all files in data/docs/
+ *   ts-node src/embed.ts path/to/file.pdf    # ingest a specific file
+ */
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     var desc = Object.getOwnPropertyDescriptor(m, k);
@@ -38,117 +40,111 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.searchDocs = searchDocs;
-// const DATA_DIR = path.resolve(__dirname, '..', 'data', 'docs');
-// const MODEL_DIR = path.resolve(__dirname, '..'); // where we’ll save vocab/idf
-// const VOCAB_PATH = path.join(MODEL_DIR, 'vocab.json');
-// const IDF_PATH = path.join(MODEL_DIR, 'idf.bin'); // Float32Array
-// function chunkText(text: string, max = 1200) {
-//   const paras = text.split(/\n{2,}/g);
-//   const chunks: string[] = [];
-//   let buf = '';
-//   for (const p of paras) {
-//     if ((buf + '\n\n' + p).length > max && buf) {
-//       chunks.push(buf.trim());
-//       buf = p;
-//     } else {
-//       buf = buf ? buf + '\n\n' + p : p;
-//     }
-//   }
-//   if (buf) chunks.push(buf.trim());
-//   return chunks;
-// }
-// async function embedAll() {
-//   // 1) Read docs and chunk
-//   const files = fs.existsSync(DATA_DIR)
-//     ? fs
-//         .readdirSync(DATA_DIR)
-//         .filter((f) => f.endsWith('.md') || f.endsWith('.pdf'))
-//     : [];
-//   if (!files.length) {
-//     console.log('No .md files in', DATA_DIR);
-//     return;
-//   }
-//   const allChunks: { file: string; full: string; idx: number; text: string }[] =
-//     [];
-//   for (const file of files) {
-//     const full = path.join(DATA_DIR, file);
-//     let text = '';
-//     if (file.endsWith('.pdf')) {
-//       const dataBuffer = fs.readFileSync(full);
-//       const pdfData = await pdf(dataBuffer); // ✅ call directly, no .default
-//       text = pdfData.text;
-//     } else {
-//       text = fs.readFileSync(full, 'utf8');
-//     }
-//     const chunks = chunkText(text);
-//     chunks.forEach((t, i) => allChunks.push({ file, full, idx: i, text: t }));
-//   }
-//   // 2) Build vocab + idf over all chunks
-//   const { vocab, idf } = buildVocabAndIdf(allChunks.map((c) => c.text));
-//   fs.writeFileSync(VOCAB_PATH, JSON.stringify(vocab), 'utf8');
-//   fs.writeFileSync(IDF_PATH, Buffer.from(new Float32Array(idf).buffer));
-//   // 3) Store TF-IDF vectors in SQLite (BLOB) like before
-//   const insert = db.prepare(`
-//     INSERT INTO chunks (doc_id, path, chunk_index, text, embedding)
-//     VALUES (@doc_id, @path, @chunk_index, @text, @embedding)
-//   `);
-//   const clear = db.prepare(`DELETE FROM chunks`);
-//   clear.run();
-//   for (const c of allChunks) {
-//     const vec = tfidfVector(c.text, vocab, idf);
-//     const buf = Buffer.from(new Float32Array(vec).buffer);
-//     insert.run({
-//       doc_id: c.file,
-//       path: c.full,
-//       chunk_index: c.idx,
-//       text: c.text,
-//       embedding: buf,
-//     });
-//   }
-//   console.log(`Indexed ${allChunks.length} chunks. Vocab size: ${idf.length}.`);
-// }
-// embedAll().catch((e) => {
-//   console.error(e);
-//   process.exit(1);
-// });
-// backend/src/embed.ts
-// backend/src/search.ts
+exports.ingestFile = ingestFile;
+require("dotenv/config");
 const fs = __importStar(require("fs"));
 const path = __importStar(require("path"));
 const db_1 = require("./db");
-const verctorizer_1 = require("./verctorizer");
-// --- Load model ---
-const VOCAB_PATH = path.resolve(__dirname, '..', 'vocab.json');
-const IDF_PATH = path.resolve(__dirname, '..', 'idf.bin');
-const vocab = JSON.parse(fs.readFileSync(VOCAB_PATH, 'utf8'));
-const idfBuffer = fs.readFileSync(IDF_PATH);
-const idf = new Float32Array(idfBuffer.buffer, idfBuffer.byteOffset, idfBuffer.length / 4);
-// --- Utility: cosine similarity ---
-function cosineSimilarity(a, b) {
-    let dot = 0, na = 0, nb = 0;
-    const len = Math.min(a.length, b.length);
-    for (let i = 0; i < len; i++) {
-        dot += a[i] * b[i];
-        na += a[i] * a[i];
-        nb += b[i] * b[i];
+const embeddings_1 = require("./embeddings");
+const DATA_DIR = path.resolve(__dirname, '..', 'data', 'docs');
+const SUPPORTED_EXTENSIONS = ['.md', '.txt', '.pdf'];
+function chunkText(text, maxChars = 800, overlap = 100) {
+    const paragraphs = text.split(/\n{2,}/g).map(p => p.trim()).filter(Boolean);
+    const chunks = [];
+    let buffer = '';
+    for (const para of paragraphs) {
+        if ((buffer + '\n\n' + para).length > maxChars && buffer) {
+            chunks.push(buffer.trim());
+            // Keep overlap from end of previous chunk
+            const words = buffer.split(/\s+/);
+            const overlapWords = words.slice(-Math.min(20, Math.floor(words.length / 4)));
+            buffer = overlapWords.join(' ') + '\n\n' + para;
+        }
+        else {
+            buffer = buffer ? buffer + '\n\n' + para : para;
+        }
     }
-    return na && nb ? dot / (Math.sqrt(na) * Math.sqrt(nb)) : 0;
+    if (buffer.trim())
+        chunks.push(buffer.trim());
+    return chunks.filter(c => c.length > 30);
 }
-// --- Core search ---
-async function searchDocs(query, topK = 5) {
-    const qVec = (0, verctorizer_1.tfidfVector)(query.toLowerCase(), vocab, idf);
-    const rows = db_1.db
-        .prepare(`SELECT doc_id, path, chunk_index, text, embedding FROM chunks`)
-        .all();
-    const scored = rows.map((r) => {
-        const emb = new Float32Array(r.embedding.buffer, r.embedding.byteOffset, r.embedding.length / 4);
-        const sim = cosineSimilarity(qVec, emb);
-        return { ...r, score: sim };
-    });
-    scored.sort((a, b) => b.score - a.score);
-    const best = scored.slice(0, topK);
-    console.log('\nTop matches for:', query);
-    best.forEach((r, i) => console.log(`${i + 1}. ${r.doc_id} (chunk ${r.chunk_index}) score=${r.score.toFixed(3)}\n   ${r.text.slice(0, 100)}...`));
-    return best;
+async function readFile(filePath) {
+    const ext = path.extname(filePath).toLowerCase();
+    if (ext === '.pdf') {
+        const pdf = require('pdf-parse');
+        const buffer = fs.readFileSync(filePath);
+        const data = await pdf(buffer);
+        return data.text;
+    }
+    // .md, .txt, or any other text file
+    return fs.readFileSync(filePath, 'utf8');
 }
+async function ingestFile(filePath, fileName) {
+    const docId = fileName || path.basename(filePath);
+    const ext = path.extname(filePath).toLowerCase();
+    console.log(`\n[ingest] Processing: ${docId}`);
+    const text = await readFile(filePath);
+    console.log(`  Characters: ${text.length}`);
+    const chunks = chunkText(text);
+    console.log(`  Chunks: ${chunks.length}`);
+    // Remove old chunks for this file
+    db_1.db.prepare('DELETE FROM chunks WHERE doc_id = ?').run(docId);
+    db_1.db.prepare('DELETE FROM documents WHERE filename = ?').run(docId);
+    const insert = db_1.db.prepare(`
+    INSERT INTO chunks (doc_id, path, chunk_index, text, embedding)
+    VALUES (@doc_id, @path, @chunk_index, @text, @embedding)
+  `);
+    for (let i = 0; i < chunks.length; i++) {
+        if (i % 5 === 0)
+            console.log(`  Embedding chunk ${i + 1}/${chunks.length}...`);
+        const vec = await (0, embeddings_1.embed)(chunks[i]);
+        const blob = Buffer.from(vec.buffer);
+        insert.run({
+            doc_id: docId,
+            path: filePath,
+            chunk_index: i,
+            text: chunks[i],
+            embedding: blob,
+        });
+    }
+    db_1.db.prepare(`
+    INSERT OR REPLACE INTO documents (filename, file_type, chunk_count)
+    VALUES (?, ?, ?)
+  `).run(docId, ext.replace('.', ''), chunks.length);
+    console.log(`  Done: ${chunks.length} chunks indexed for ${docId}`);
+    return chunks.length;
+}
+async function main() {
+    const args = process.argv.slice(2);
+    if (args.length > 0) {
+        for (const arg of args) {
+            if (fs.existsSync(arg)) {
+                await ingestFile(path.resolve(arg));
+            }
+            else {
+                console.error(`File not found: ${arg}`);
+            }
+        }
+    }
+    else {
+        if (!fs.existsSync(DATA_DIR)) {
+            console.log(`Data directory not found: ${DATA_DIR}`);
+            console.log('Create it and add .md, .txt, or .pdf files.');
+            return;
+        }
+        const files = fs.readdirSync(DATA_DIR)
+            .filter(f => SUPPORTED_EXTENSIONS.includes(path.extname(f).toLowerCase()));
+        if (!files.length) {
+            console.log(`No supported files found in ${DATA_DIR}`);
+            return;
+        }
+        console.log(`Found ${files.length} file(s) to ingest`);
+        for (const file of files) {
+            await ingestFile(path.join(DATA_DIR, file));
+        }
+    }
+    const totalChunks = db_1.db.prepare('SELECT COUNT(*) as count FROM chunks').get();
+    const totalDocs = db_1.db.prepare('SELECT COUNT(*) as count FROM documents').get();
+    console.log(`\nIngestion complete! ${totalDocs.count} documents, ${totalChunks.count} total chunks.`);
+}
+main().catch(console.error);
